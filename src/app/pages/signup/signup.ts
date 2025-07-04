@@ -48,8 +48,19 @@ export class signUpComponent {
   submit() {
     this.loginService.signup(this.signupForm.value.name, this.signupForm.value.email, this.signupForm.value.password).subscribe({
         next: () => this.toastService.success("Conta cadastrada com sucesso!"),
-        error: () => this.toastService.error("Erro inesperado, tente novamente mais tarde"),
-    })
+        error: (err) => {
+          console.log('Erro no backend: ', err.error);
+          if (
+            err.status === 409 ||
+            (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('email')) ||
+            (err.error && err.error.name && err.error.name.toLowerCase().includes('email'))
+          ) {
+            this.toastService.error("Já existe um usuário cadastrado com esse email");
+          } else {
+            this.toastService.error("Erro inesperado, tente novamente mais tarde");
+        }
+      }
+    });
   }
 
   navigate() {
