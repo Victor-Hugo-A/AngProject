@@ -39,8 +39,13 @@
             placeholder="******"
             required
         >
-            <img src="/assets/password.svg" alt="Email Icon" />
+            <img src="/assets/password.svg" alt="Password Icon" />
         </app-primary-input>
+        @if (signupForm.get('password')?.touched && signupForm.get('password')?.errors?.['minlength']) {
+        <div style="color:red; font-size:13px; background-color: rgba(173, 173, 173, 0.171);">
+            A senha deve conter no mínimo 6 caracteres.
+        </div>
+}
 
         <app-primary-input
             formControlName="passwordConfirm"
@@ -52,6 +57,11 @@
         >
             <img src="/assets/password.svg" />
         </app-primary-input>
+        @if (signupForm.hasError('passwordsMismatch') && signupForm.get('passwordConfirm')?.touched) {
+        <div style="color: red; font-size: 13px; background-color: rgba(173, 173, 173, 0.171);">
+            As senhas não conferem.
+        </div>
+}
     </form>
 </app-header>
 

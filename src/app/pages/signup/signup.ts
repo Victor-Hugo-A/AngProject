@@ -5,6 +5,7 @@ import { PrimaryInput } from '../../componente/primary-input/primary-input';
 import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { ToastrService } from 'ngx-toastr';
+import { AbstractControl } from '@angular/forms';
 
 interface signupForm {
   name: FormControl,
@@ -29,6 +30,9 @@ interface signupForm {
 })
 
 export class signUpComponent {
+onTouched() {
+throw new Error('Method not implemented.');
+}
   signupForm!: FormGroup<signupForm>;
 
   constructor( 
@@ -42,9 +46,16 @@ export class signUpComponent {
       email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', [Validators.required, Validators.minLength(6)]),
       passwordConfirm: new FormControl('', [Validators.required, Validators.minLength(6)])
-    })
+    }, { validators: signUpComponent.passwordsMatchValidator });
   }
 
+    static passwordsMatchValidator(control: AbstractControl) {
+      const form = control as FormGroup;
+      const password = form.get('password')?.value;
+      const passwordConfirm = form.get('passwordConfirm')?.value;
+      return password === passwordConfirm ? null : { passwordsMismatch: true };
+    }
+  
   submit() {
     this.loginService.signup(this.signupForm.value.name, this.signupForm.value.email, this.signupForm.value.password).subscribe({
         next: () => this.toastService.success("Conta cadastrada com sucesso!"),
