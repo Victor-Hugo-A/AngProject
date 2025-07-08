@@ -1,0 +1,26 @@
+<app-header
+    title="Reset your password"
+    primaryBtnText="Send"
+    secondaryBtnText="Back to Login"
+    (submit)="submit()"
+    (navigate)="navigate()"
+>
+    <form [formGroup]="form">
+        <app-primary-input
+            formControlName="email"
+            inputName="email"
+            type="email"
+            placeholder="Enter your email"
+            label="Email"
+            required
+        >
+            <img src="/assets/email.svg" alt="Email Icon" />
+        </app-primary-input>
+
+    @if (form.get('email')?.touched && form.get('email')?.invalid) {
+        <div style="color:red; font-size:13px;">
+            Digite um email válido.
+        </div>
+    }
+</form> 
+</app-header>

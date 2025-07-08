@@ -4,7 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { PrimaryInput } from '../../componente/primary-input/primary-input';
 import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
-import { Toast, ToastrService } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
@@ -37,7 +37,10 @@ export class Login {
 
   submit() {
     this.loginService.login(this.loginForm.value.email, this.loginForm.value.password).subscribe({
-        next: () => this.toastService.success("Login realizado com sucesso!"),
+        next: () => {
+          this.toastService.success("Login realizado com sucesso!");
+          this.router.navigate(['user']);
+        },
         error: (err) => {
           if (
             err.status === 403 ||
@@ -57,6 +60,10 @@ export class Login {
         }
       })
     }
+
+  navigateForgotPassword() {
+    this.router.navigate(['forgot']);
+  }
 
   navigate() {
     // Navigation logic can go here

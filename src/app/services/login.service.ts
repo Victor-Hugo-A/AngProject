@@ -31,4 +31,8 @@ export class LoginService {
       })
     );
   }
+
+  forgotPassword(email: string) {
+    return this.httpCliente.post('/auth/forgot-password', { email });
+  }
 }
