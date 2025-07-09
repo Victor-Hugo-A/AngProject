@@ -5,19 +5,21 @@ import { PrimaryInput } from '../../componente/primary-input/primary-input';
 import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { ToastrService } from 'ngx-toastr';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-forgot',
   standalone: true,
-  imports: [ReactiveFormsModule, Header, PrimaryInput],
+  imports: [ReactiveFormsModule, Header, PrimaryInput, CommonModule],
   templateUrl: './forgot.html',
   styleUrl: './forgot.scss'
 })
 export class Forgot {
     form = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email])
-  });
+      email: new FormControl('', [Validators.required, Validators.email])
+    })
+    isLoading = false;
 
   constructor(
     private loginService: LoginService,
@@ -26,31 +28,43 @@ export class Forgot {
   ) {}
 
   submit() {
-    const email = this.form.get('email')?.value;
-    if (!email || this.form.get('email')?.invalid) {
-      this.toastService.error('Digite um email cadastrado para recuperar a senha.');
+    if (this.form.invalid) {
+      this.markFormAsTouched();
       return;
     }
 
-    this.loginService.forgotPassword(email).subscribe({
-      next: () => {
-        this.toastService.success('Enviamos o link de redefinição de senha para o email cadastrado!');
-        this.router.navigate(['login'])
-      },
-      error: (err) => {
-        if (
-          err.status === 404 ||
-          (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('não cadastrado'))
-        ) {
-          this.toastService.error('Email não cadastrado.');
-        } else {
-          this.toastService.error('Erro ao recuperar a senha. Tente novamente');
-          }
-        }
-      });
-    }
+    this.isLoading = true;
+    const email = this.form.value.email!;
 
-    navigate() {
-      this.router.navigate(['login'])
+    this.loginService.forgotPassword(email).subscribe({
+      next: (response) => {
+
+        if (response.exists) {
+          this.toastService.success('Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.');
+        } else {
+          this.toastService.warning('Este email não está cadastrado em nosso sistema');
+        }
+        setTimeout(() => {
+        this.router.navigate(['/login'])
+      }, 3000);
+    },
+      error: (error) => {
+        console.error('Erro:', error);
+        this.toastService.error('Ocorreu um erro ao processar sua solicitação');
+        this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+  markFormAsTouched() {
+    Object.values(this.form.controls).forEach(control => {
+      control.markAllAsTouched();
+    });
+  }
+
+    navigateToLogin() {
+      this.router.navigate(['/login'])
     }
   }

@@ -1,11 +1,12 @@
 <app-header
     title="Reset your password"
     primaryBtnText="Send"
+    [primaryBtnDisabled]="form.invalid || isLoading"
     secondaryBtnText="Back to Login"
     (submit)="submit()"
-    (navigate)="navigate()"
+    (navigate)="navigateToLogin()"
 >
-    <form [formGroup]="form">
+    <form [formGroup]="form" (ngSubmit)="submit()">
         <app-primary-input
             formControlName="email"
             inputName="email"
@@ -13,14 +14,20 @@
             placeholder="Enter your email"
             label="Email"
             required
+            (blur)="form.get('email')?.markAsTouched()"
         >
             <img src="/assets/email.svg" alt="Email Icon" />
         </app-primary-input>
 
     @if (form.get('email')?.touched && form.get('email')?.invalid) {
-        <div style="color:red; font-size:13px;">
-            Digite um email válido.
+        <div class= "error-message">
+            @if (form.get('email')?.errors?.['required']) {
+                <span class="error"  >Email é obrigatório</span>
+            }
+            @if (form.get('email')?.errors?.['email']) {
+                <span class="error" >Digite um email válido.</span>
+            }
         </div>
     }
-</form> 
+    </form> 
 </app-header>

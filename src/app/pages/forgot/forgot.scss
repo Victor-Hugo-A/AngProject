@@ -13,4 +13,20 @@ form {
         color: vars.$secondary-color;
         text-align: end;
     }
+
+    .error-message {
+        font-size: 13px;
+    }
+
+    .error {
+        color: vars.$error-class;
+        display: block;
+    }
+
+        app-header {
+        button[disabled] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
 }
