@@ -23,7 +23,7 @@ import { ToastrService } from 'ngx-toastr';
 export class Login {
   loginForm!: FormGroup;
 
-  constructor( 
+  constructor(
     private router: Router,
     private loginService: LoginService,
     private toastService: ToastrService
@@ -52,10 +52,10 @@ export class Login {
             err.status === 400 ||
             (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('senha')) ||
             (err.error && err.error.name && err.error.name.toLowerCase().includes('senha'))
-          ) {            
+          ) {
             this.toastService.error("Senha inválida");
           } else {
-            this.toastService.error("Erro inesperado, tente novamente mais tarde");
+            this.toastService.error("Digite um e-mail cadastrado!");
           }
         }
       })
