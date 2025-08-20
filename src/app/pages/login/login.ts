@@ -37,29 +37,29 @@ export class Login {
 
   submit() {
     this.loginService.login(this.loginForm.value.email, this.loginForm.value.password).subscribe({
-        next: () => {
-          this.toastService.success("Login realizado com sucesso!");
-          this.router.navigate(['user']);
-        },
-        error: (err) => {
-          if (
-            err.status === 403 ||
-            (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('não encontrado')) ||
-            (err.error && err.error.name && err.error.name.toLowerCase().includes('não cadastrado'))
-          ) {
-            this.toastService.error("Usuário não cadastrado, Faça o Registro!");
-          } else if (
-            err.status === 400 ||
-            (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('senha')) ||
-            (err.error && err.error.name && err.error.name.toLowerCase().includes('senha'))
-          ) {
-            this.toastService.error("Senha inválida");
-          } else {
-            this.toastService.error("Digite um e-mail cadastrado!");
-          }
+      next: () => {
+        this.toastService.success("Login realizado com sucesso!");
+        this.router.navigate(['user']);
+      },
+      error: (err) => {
+        if (
+          err.status === 403 ||
+          (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('não encontrado')) ||
+          (err.error && err.error.name && err.error.name.toLowerCase().includes('não cadastrado'))
+        ) {
+          this.toastService.error("Usuário não encontrado!");
+        } else if (
+          err.status === 400 ||
+          (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('senha')) ||
+          (err.error && err.error.name && err.error.name.toLowerCase().includes('senha'))
+        ) {
+          this.toastService.error("Senha inválida");
+        } else {
+          this.toastService.error("Erro inesperado, tente novamente mais tarde");
         }
-      })
-    }
+      }
+    })
+  }
 
   navigateForgotPassword() {
     this.router.navigate(['forgot']);
