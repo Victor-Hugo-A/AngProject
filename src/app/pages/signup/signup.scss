@@ -1,4 +1,14 @@
+@use "../../../styles/variables.scss" as vars;
+
+
 .user-page { padding: 2rem; }
 .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:1rem; margin-top:1rem; }
 .card { border:1px solid #333; border-radius:.75rem; padding:1rem; display:flex; justify-content:space-between; }
 .muted { opacity:.7; margin-top:1rem; }
+
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

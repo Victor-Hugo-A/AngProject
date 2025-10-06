@@ -1,36 +1,110 @@
+@use "sass:color";
 @use "../../../styles/variables.scss" as vars;
 
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* ===== Wrapper ===== */
 .input-wrapper {
-    color: vars.$text-color;
-    font-size: 16px;
-    text-align: start;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 16px;
+  color: vars.$text-color;
 
-    label {
-        margin-bottom: 10px;
+  label {
+    display: block;
+    margin: 0 0 8px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* ===== Caixa do input + ícone ===== */
+  .input-content {
+    width: 100%;
+    height: 48px;
+    display: grid;
+    grid-template-columns: 1fr 44px;     /* campo + coluna do ícone */
+    align-items: stretch;
+    border-radius: 8px;
+    border: 1px solid color.scale(vars.$gray-color, $lightness: 20%);
+    background-color: vars.$gray-secondary-bg;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s, background-color .2s;
+
+    /* Campo */
+    .primary-input {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      padding: 0 12px;
+      font-size: 1rem;
+      color: vars.$text-color;
+      box-sizing: border-box;
+
+      &::placeholder {
+        color: color.scale(vars.$text-color, $lightness: 35%);
+        opacity: .9;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        color: color.scale(vars.$text-color, $lightness: 30%);
+      }
+
+      /* feedback quando inválido/tocado (Angular) */
+      &.ng-invalid.ng-touched {
+        box-shadow: inset 0 0 0 1px #dc2626;
+      }
     }
 
-    .input-content {
-        width: 100%;
-        border-radius: 8px;
-        display: flex;
+    /* Ícone à direita */
+    .icon {
+      display: grid;
+      place-items: center;
+      border-left: 1px solid color.scale(vars.$gray-color, $lightness: 20%);
+      background-color: vars.$gray-color;
 
-        .icon {
-            padding: 12px;
-            background-color: vars.$gray-color;
-            border-radius: 0 8px 8px 0;
-        }
-
-        img {
-            height: 20px;
-        }
-
-        input {
-            border: none;
-            border-radius: 8px 0 0 8px;
-            background-color: vars.$gray-secondary-bg;
-            padding: 12px 0 12px 20px;
-            width: 100%;
-        }
-
+      img, svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        object-fit: contain;
+      }
     }
+
+    &:hover {
+      border-color: color.scale(vars.$gray-color, $lightness: 10%);
+    }
+
+    &:focus-within {
+      border-color: color.scale(vars.$text-color, $lightness: -10%);
+      box-shadow: 0 0 0 3px color.change(color.scale(vars.$text-color, $lightness: 30%), $alpha: .25);
+      background-color: color.scale(vars.$gray-secondary-bg, $lightness: 8%);
+    }
+
+    &.is-disabled { opacity: .65; pointer-events: none; }
+  }
+
+  /* Tamanhos opcionais */
+  &.sm .input-content { height: 40px; grid-template-columns: 1fr 40px; }
+  &.lg .input-content { height: 56px; grid-template-columns: 1fr 52px; }
+
+  /* Estado de erro aplicado fora (via [ngClass]) */
+  &.has-error .input-content {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .15);
+  }
+}
+
+/* Suporte RTL opcional */
+[dir="rtl"] .input-wrapper .input-content {
+  grid-template-columns: 44px 1fr;
+}
+[dir="rtl"] .input-wrapper .input-content .icon {
+  border-left: 0;
+  border-right: 1px solid color.scale(vars.$gray-color, $lightness: 20%);
 }
