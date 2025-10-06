@@ -1,1 +1,16 @@
-<p>Usuário autenticado</p>
+<section class="user-page">
+  <h1>Bem-vindo, {{ user()?.name }} 👋</h1>
+
+  <div class="cards">
+    <div class="card">
+      <strong>Abertos por você</strong>
+      <span>0</span>
+    </div>
+    <div class="card">
+      <strong>Atribuídos a mim</strong>
+      <span>0</span>
+    </div>
+  </div>
+
+  <p class="muted">Aqui vai seu dashboard ou atalhos (Abrir chamado, Meus chamados, Perfil...).</p>
+</section>

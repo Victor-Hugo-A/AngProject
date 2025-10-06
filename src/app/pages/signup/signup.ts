@@ -1,81 +1,82 @@
 import { Component } from '@angular/core';
-import { Header } from '../../componente/header/header';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PrimaryInput } from '../../componente/primary-input/primary-input';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoginService } from '../../services/login.service';
 import { ToastrService } from 'ngx-toastr';
-import { AbstractControl } from '@angular/forms';
 
-interface signupForm {
-  name: FormControl,
-  email: FormControl,
-  password: FormControl,
-  passwordConfirm: FormControl
-}
+import { Header } from '../../componente/header/header';
+import { PrimaryInput } from '../../componente/primary-input/primary-input';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [
-    Header,
-    ReactiveFormsModule,
-    PrimaryInput
-  ],
-  providers: [
-    LoginService
-  ],
+  imports: [CommonModule, ReactiveFormsModule, Header, PrimaryInput],
+  providers: [LoginService],
   templateUrl: './signup.html',
   styleUrl: './signup.scss'
 })
+export class SignupComponent {
+  signupForm!: FormGroup;
+  loading = false;
 
-export class signUpComponent {
-onTouched() {
-throw new Error('Method not implemented.');
-}
-  signupForm!: FormGroup<signupForm>;
-
-  constructor( 
+  constructor(
+    private fb: FormBuilder,
     private router: Router,
     private loginService: LoginService,
-    private toastService: ToastrService
-  ){
-    // Initialization logic can go here
-    this.signupForm = new FormGroup({
-      name: new FormControl('', [Validators.required, Validators.minLength(3)]),
-      email: new FormControl('', [Validators.required, Validators.email]),
-      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
-      passwordConfirm: new FormControl('', [Validators.required, Validators.minLength(6)])
-    }, { validators: signUpComponent.passwordsMatchValidator });
+    private toast: ToastrService
+  ) {
+    // ✅ Inicialize o form AQUI — depois que o fb foi injetado
+    this.signupForm = this.fb.group(
+      {
+        name: ['', [Validators.required, Validators.minLength(3)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]],
+        passwordConfirm: ['', [Validators.required, Validators.minLength(6)]],
+      },
+      { validators: this.passwordsMatchValidator }
+    );
   }
 
-    static passwordsMatchValidator(control: AbstractControl) {
-      const form = control as FormGroup;
-      const password = form.get('password')?.value;
-      const passwordConfirm = form.get('passwordConfirm')?.value;
-      return password === passwordConfirm ? null : { passwordsMismatch: true };
+  // 🔒 Validador customizado para comparar senhas
+  private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password')?.value;
+    const confirm = control.get('passwordConfirm')?.value;
+    return password === confirm ? null : { passwordsMismatch: true };
+  }
+
+  submit(): void {
+    if (this.signupForm.invalid || this.loading) {
+      this.signupForm.markAllAsTouched();
+      return;
     }
-  
-  submit() {
-    this.loginService.signup(this.signupForm.value.name, this.signupForm.value.email, this.signupForm.value.password).subscribe({
-        next: () => this.toastService.success("Conta cadastrada com sucesso!"),
-        error: (err) => {
-          console.log('Erro no backend: ', err.error);
-          if (
-            err.status === 409 ||
-            (err.error && typeof err.error === 'string' && err.error.toLowerCase().includes('email')) ||
-            (err.error && err.error.name && err.error.name.toLowerCase().includes('email'))
-          ) {
-            this.toastService.error("Já existe um usuário cadastrado com esse email");
-          } else {
-            this.toastService.error("Erro inesperado, tente novamente mais tarde");
+
+    const { name, email, password } = this.signupForm.value as { name: string; email: string; password: string };
+    this.loading = true;
+
+    this.loginService.register(name, email, password).subscribe({
+      next: (_res: unknown) => {
+        this.toast.success('Conta cadastrada com sucesso!');
+        this.loading = false;
+        void this.router.navigate(['login']); // ✅ ignora promise corretamente
+      },
+      error: (err: unknown) => {
+        this.loading = false;
+
+        const status = (err as any)?.status as number | undefined;
+        const bodyStr = typeof (err as any)?.error === 'string' ? ((err as any).error as string).toLowerCase() : '';
+        const nameStr = (((err as any)?.error?.name) ?? '').toLowerCase();
+
+        if (status === 409 || bodyStr.includes('email') || nameStr.includes('email')) {
+          this.toast.error('Já existe um usuário cadastrado com esse e-mail');
+        } else {
+          this.toast.error('Erro inesperado, tente novamente mais tarde');
         }
       }
     });
   }
 
-  navigate() {
-    // Navigation logic can go here
-    this.router.navigate(["login"]);
+  navigate(): void {
+    void this.router.navigate(['login']);
   }
 }

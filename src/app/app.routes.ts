@@ -1,32 +1,22 @@
 import { Routes } from '@angular/router';
-import { Login } from './pages/login/login';
-import { signUpComponent } from './pages/signup/signup';
-import { User } from './pages/user/user';
-import { AuthGuard } from './services/auth-guard.service';
-import { Forgot } from './pages/forgot/forgot';
+import {authGuard} from './services/auth-guard.service';
+
 
 export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
 
-    {
-    path: "",
-    redirectTo: "/login",
-    pathMatch: "full"
-    },
-    {
-        path: "login",
-        component: Login
-    },
-    {
-        path: "signup",
-        component: signUpComponent
-    },
-    {
-        path: "user",
-        component: User,
-        canActivate: [AuthGuard]
-    },
-    {
-        path: "forgot",
-        component: Forgot
-    }
+  { path: 'login', loadComponent: () =>
+      import('./pages/login/login').then(m => m.LoginComponent) },
+
+  { path: 'signup', loadComponent: () =>
+      import('./pages/signup/signup').then(m => m.SignupComponent) },
+
+  { path: 'forgot', loadComponent: () =>
+      import('./pages/forgot/forgot').then(m => m.ForgotComponent) },
+
+  // rota pós-login (protegida)
+  { path: 'user', canActivate: [authGuard], loadComponent: () =>
+      import('./pages/user/user').then(m => m.UserComponent) },
+
+  { path: '**', redirectTo: 'login' }
 ];

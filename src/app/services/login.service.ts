@@ -1,46 +1,49 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { LoginResponse } from '../types/login-response.type';
-import { catchError, Observable, of, tap, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { AuthStore } from './auth.store';
 
-@Injectable({
-  providedIn: 'root'
-})
+type LoginResponse = { name: string; token: string };
+
+const API = 'http://localhost:8080'; // ajuste se necessário
+
+@Injectable({ providedIn: 'root' })
 export class LoginService {
-  apiUrl: string = "http://localhost:8080/auth"
+  constructor(private http: HttpClient, private store: AuthStore) {}
 
-  constructor(private httpCliente: HttpClient) { }
-
-  login(email: string, password: string) {
-    return this.httpCliente.post<LoginResponse>(this.apiUrl + "/login", { email, password }).pipe(
-      // Handle the response here if needed
-      tap((value) => {
-        sessionStorage.setItem("auth-token", value.token);
-        sessionStorage.setItem("username", value.name);
+  login(email: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${API}/auth/login`, { email, password }).pipe(
+      tap((res) => {
+        // ⚠️ Isso precisa existir. Se faltar, o guard sempre enxerga “não autenticado”.
+        this.store.setSession(res.token, { name: res.name, email });
       })
     );
   }
 
-
-  signup(name: string, email: string, password: string) {
-    return this.httpCliente.post<LoginResponse>(this.apiUrl + "/register", { name, email, password }).pipe(
-      // Handle the response here if needed
-      tap((value) => {
-        sessionStorage.setItem("auth-token", value.token);
-        sessionStorage.setItem("username", value.name);
+  register(name: string, email: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${API}/auth/signup`, { name, email, password }).pipe(
+      tap((res) => {
+        // opcional: já logar após registrar
+        // this.store.setSession(res.token, { name: res.name, email });
       })
     );
   }
 
-  forgotPassword(email: string): Observable<{ exists: boolean}> {
-    return this.httpCliente.post<{ exists: boolean }>(this.apiUrl + "/forgot", { email })
-    .pipe(
-      catchError(error => {
-        if (error.status === 404) {
-          return of({ exists: false });
-        }
-        return throwError(error);
-      })
-    );
+  forgotPassword(email: string, frontendUrl: string) {
+    // alias para manter compatibilidade com o componente Forgot
+    return this.requestReset(email, frontendUrl);
+  }
+
+  requestReset(email: string, frontendUrl: string) {
+    return this.http.post(`${API}/auth/reset/request`, { email, frontendUrl });
+  }
+
+  confirmReset(token: string, newPassword: string) {
+    return this.http.post(`${API}/auth/reset/confirm`, { token, newPassword });
+  }
+
+  logout() {
+    this.store.clear();
   }
 }
