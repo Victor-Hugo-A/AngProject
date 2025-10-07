@@ -1,0 +1,61 @@
+<header class="topbar" [class.is-open]="mobileOpen()">
+  <div class="topbar__inner">
+    <!-- Brand -->
+    <a class="topbar__brand" routerLink="/" (click)="closeMobile()">
+      <span class="topbar__logo">🛟</span>
+      <span class="topbar__name">HelpDesk</span>
+    </a>
+
+    <!-- Burger (mobile) -->
+    <button class="topbar__burger" type="button" aria-label="Abrir menu"
+            (click)="toggleMobile()">
+      <span></span><span></span><span></span>
+    </button>
+
+    <!-- Navegação -->
+    <nav class="topbar__nav" role="navigation" aria-label="Principal">
+      <a routerLink="/user"           routerLinkActive="is-active" (click)="closeMobile()">Início</a>
+      <a routerLink="/tickets"        routerLinkActive="is-active" (click)="closeMobile()">Meus chamados</a>
+      <a routerLink="/tickets/new"    routerLinkActive="is-active" (click)="closeMobile()">Abrir chamado</a>
+      <a routerLink="/knowledge"      routerLinkActive="is-active" (click)="closeMobile()">Base de conhecimento</a>
+      <a routerLink="/admin"          routerLinkActive="is-active" (click)="closeMobile()">Admin</a>
+    </nav>
+
+    <!-- Ações -->
+    <div class="topbar__right">
+      <button class="icon-btn" type="button" aria-label="Notificações">🔔</button>
+
+      <div class="user">
+        <button class="user__btn" type="button" (click)="toggleMobile()"
+                aria-haspopup="menu" [attr.aria-expanded]="mobileOpen()">
+          @if (user?.avatarUrl) {
+            <img class="user__avatar" [src]="user?.avatarUrl!" alt="" />
+          } @else {
+            <span class="user__avatar user__avatar--fallback">
+              {{ avatarFallback(user?.name) }}
+            </span>
+          }
+          <span class="user__name">{{ user?.name }}</span>
+        </button>
+
+        @if (mobileOpen()) {
+          <div class="user__menu" role="menu">
+            <button role="menuitem" (click)="onProfile()">Perfil</button>
+            <button role="menuitem" (click)="onLogout()">Sair</button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer mobile -->
+  @if (mobileOpen()) {
+    <div class="topbar__drawer">
+      <a routerLink="/user"        routerLinkActive="is-active" (click)="closeMobile()">Início</a>
+      <a routerLink="/tickets"     routerLinkActive="is-active" (click)="closeMobile()">Meus chamados</a>
+      <a routerLink="/tickets/new" routerLinkActive="is-active" (click)="closeMobile()">Abrir chamado</a>
+      <a routerLink="/knowledge"   routerLinkActive="is-active" (click)="closeMobile()">Base de conhecimento</a>
+      <a routerLink="/admin"       routerLinkActive="is-active" (click)="closeMobile()">Admin</a>
+    </div>
+  }
+</header>

@@ -1,17 +1,40 @@
-import { Component, computed, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { AuthStore } from './services/auth.store';
-import {TopbarComponent} from './componente/topbar/topbar.component';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { TopbarComponent } from './componente/topbar/topbar.component'; // ajuste o path
+
+type CurrentUser = {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  avatarUrl?: string | null;
+};
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, TopbarComponent],
+  imports: [RouterOutlet, TopbarComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class AppComponent {
-  private auth = inject(AuthStore);
-  isLogged = computed(() => this.auth.isAuthenticated());
+  // ✅ o template usa [user]="currentUser"
+  currentUser: CurrentUser | null = {
+    id: '1',
+    name: 'Victor Hugo',
+    email: 'victor@example.com',
+    role: 'user',
+    avatarUrl: null,
+  };
+
+  // ✅ o template usa (openProfile)="router.navigate(...)"
+  // Deixe público para o template enxergar
+  readonly router = inject(Router);
+
+  // ✅ o template usa (logout)="handleLogout()"
+  handleLogout() {
+    // coloque sua lógica real (limpar token, chamar serviço, etc.)
+    this.currentUser = null;
+    this.router.navigate(['/login']);
+  }
 }

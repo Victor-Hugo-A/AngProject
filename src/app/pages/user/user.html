@@ -1,16 +1,45 @@
+<app-topbar
+  [user]="currentUser"
+  (logout)="onTopbarLogout()"
+  (openProfile)="router.navigate(['/profile'])">
+</app-topbar>
+
 <section class="user-page">
-  <h1>Bem-vindo, {{ user()?.name }} 👋</h1>
-
-  <div class="cards">
-    <div class="card">
-      <strong>Abertos por você</strong>
-      <span>0</span>
+  <header class="user-page__header">
+    <div class="user-page__hello">
+      <h1>Bem-vindo, {{ user()?.name || 'Usuário' }} 👋</h1>
+      <p class="muted">Aqui está um resumo rápido dos seus chamados.</p>
     </div>
-    <div class="card">
-      <strong>Atribuídos a mim</strong>
-      <span>0</span>
-    </div>
-  </div>
 
-  <p class="muted">Aqui vai seu dashboard ou atalhos (Abrir chamado, Meus chamados, Perfil...).</p>
+    <div class="user-page__actions">
+      <a class="btn btn--primary" routerLink="/tickets/new">Abrir chamado</a>
+      <a class="btn" routerLink="/tickets">Ver todos</a>
+    </div>
+  </header>
+
+  <section class="cards">
+    <article class="card">
+      <span class="card__label">Abertos por você</span>
+      <strong class="card__value">{{ myOpenCount }}</strong>
+      <a routerLink="/tickets?filter=my-open" class="card__link">ver detalhes</a>
+    </article>
+
+    <article class="card">
+      <span class="card__label">Atribuídos a mim</span>
+      <strong class="card__value">{{ assignedToMeCount }}</strong>
+      <a routerLink="/tickets?filter=assigned" class="card__link">ver detalhes</a>
+    </article>
+
+    <article class="card">
+      <span class="card__label">Em andamento</span>
+      <strong class="card__value">{{ inProgressCount }}</strong>
+      <a routerLink="/tickets?filter=in-progress" class="card__link">ver detalhes</a>
+    </article>
+
+    <article class="card">
+      <span class="card__label">Resolvidos (30d)</span>
+      <strong class="card__value">{{ resolved30dCount }}</strong>
+      <a routerLink="/tickets?filter=resolved-30d" class="card__link">ver detalhes</a>
+    </article>
+  </section>
 </section>
