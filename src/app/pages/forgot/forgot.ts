@@ -37,7 +37,7 @@ export class ForgotComponent {
     const email = this.form.controls.email.value;
 
     // passe também a URL do frontend para o link do e-mail
-    this.loginService.forgotPassword(email, window.location.origin).subscribe({
+    this.loginService.requestReset(email, window.location.origin).subscribe({
       next: (_response: unknown) => {
         this.toast.success('Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.');
         this.isLoading = false;

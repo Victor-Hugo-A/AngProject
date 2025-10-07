@@ -1,13 +1,13 @@
 <app-topbar
   [user]="currentUser"
   (logout)="onTopbarLogout()"
-  (openProfile)="router.navigate(['/profile'])">
+  (openProfile)="onOpenProfile()">
 </app-topbar>
 
 <section class="user-page">
   <header class="user-page__header">
     <div class="user-page__hello">
-      <h1>Bem-vindo, {{ user()?.name || 'Usuário' }} 👋</h1>
+      <h1>Bem-vindo, {{ currentUser?.name || 'Usuário' }} 👋</h1>
       <p class="muted">Aqui está um resumo rápido dos seus chamados.</p>
     </div>
 
@@ -21,25 +21,37 @@
     <article class="card">
       <span class="card__label">Abertos por você</span>
       <strong class="card__value">{{ myOpenCount }}</strong>
-      <a routerLink="/tickets?filter=my-open" class="card__link">ver detalhes</a>
+      <a routerLink="/tickets" [queryParams]="{ filter: 'my-open' }" class="card__link">ver detalhes</a>
     </article>
 
     <article class="card">
       <span class="card__label">Atribuídos a mim</span>
       <strong class="card__value">{{ assignedToMeCount }}</strong>
-      <a routerLink="/tickets?filter=assigned" class="card__link">ver detalhes</a>
+      <a routerLink="/tickets" [queryParams]="{ filter: 'assigned' }" class="card__link">ver detalhes</a>
     </article>
 
     <article class="card">
       <span class="card__label">Em andamento</span>
       <strong class="card__value">{{ inProgressCount }}</strong>
-      <a routerLink="/tickets?filter=in-progress" class="card__link">ver detalhes</a>
+      <a routerLink="/tickets" [queryParams]="{ filter: 'in-progress' }" class="card__link">ver detalhes</a>
     </article>
 
     <article class="card">
       <span class="card__label">Resolvidos (30d)</span>
       <strong class="card__value">{{ resolved30dCount }}</strong>
-      <a routerLink="/tickets?filter=resolved-30d" class="card__link">ver detalhes</a>
+      <a routerLink="/tickets" [queryParams]="{ filter: 'resolved-30d' }" class="card__link">ver detalhes</a>
     </article>
+  </section>
+
+  <section class="shortcuts">
+    <a routerLink="/profile" class="shortcut">
+      <span>👤</span> Meu perfil
+    </a>
+    <a routerLink="/knowledge" class="shortcut">
+      <span>📚</span> Base de conhecimento
+    </a>
+    <a routerLink="/tickets/new" class="shortcut">
+      <span>📝</span> Abrir chamado
+    </a>
   </section>
 </section>
