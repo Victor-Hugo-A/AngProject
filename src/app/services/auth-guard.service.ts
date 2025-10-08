@@ -1,10 +1,11 @@
-import { CanActivateFn, Router } from '@angular/router';
-import { inject } from '@angular/core';
-import { AuthStore } from './auth.store';
+import { CanActivateFn} from '@angular/router';
 
 export const authGuard: CanActivateFn = () => {
-  const store = inject(AuthStore);
-  const router = inject(Router);
-  return store.isAuthenticated() ? true : router.createUrlTree(['/login']);
-};
+  const token = localStorage.getItem('auth_token');
+  return !!token; // se quiser, cheque expiração
+}
 
+// canActivate para rotas públicas (ex.: login)
+export const anonOnlyGuard: CanActivateFn = () => {
+  return !localStorage.getItem('auth_token');
+};

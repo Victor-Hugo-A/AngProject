@@ -1,24 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
-import { Header } from '../../componente/header/header';
-import { PrimaryInput } from '../../componente/primary-input/primary-input';
+import { Header } from '../../componente/header/header'; // Ajuste o caminho se necessário
+import { PrimaryInput } from '../../componente/primary-input/primary-input'; // Ajuste o caminho se necessário
 import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, Header, ReactiveFormsModule, PrimaryInput],
+  imports: [CommonModule, ReactiveFormsModule, Header, PrimaryInput],  // Certifique-se de que todos os módulos estão aqui
   providers: [LoginService],
   templateUrl: './login.html',
-  styleUrl: './login.scss'
+  styleUrls: ['./login.scss']
 })
 export class LoginComponent {
   loginForm!: FormGroup;
-  loading = false;
+  loading = signal(false);  // Controla o estado do botão (loading)
+  error = signal<string | null>(null);  // Controla o erro (caso haja)
 
   constructor(
     private fb: FormBuilder,
@@ -26,29 +27,35 @@ export class LoginComponent {
     private loginService: LoginService,
     private toast: ToastrService
   ) {
-    // agora o fb já foi injetado antes de usar
+    // Inicializa o formulário
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
-  submit(): void {
-    if (this.loginForm.invalid || this.loading) return;
+  // Método de submit
+  submit() {
+    if (this.loginForm.invalid || this.loading()) return;
 
-    const { email, password } = this.loginForm.value as { email: string; password: string };
-    this.loading = true;
+    // Marcar como em carregamento
+    this.loading.set(true);
+    this.error.set(null);
 
+    // Pega os valores do formulário
+    const { email, password } = this.loginForm.value;
+
+    // Chama o serviço de login
     this.loginService.login(email, password).subscribe({
       next: () => {
         this.toast.success('Login realizado com sucesso!');
-        this.loading = false;
-        // “void” silencia o aviso de promise não usada
-        void this.router.navigateByUrl('/user');
+        this.loading.set(false);  // Finaliza o carregamento
+        this.router.navigateByUrl('/user');  // Redireciona para /user
       },
       error: (err) => {
-        this.loading = false;
+        this.loading.set(false);  // Finaliza o carregamento em caso de erro
 
+        // Trata os erros de login
         const body = typeof err?.error === 'string' ? err.error.toLowerCase() : '';
         const name = (err?.error?.name ?? '').toLowerCase();
 
@@ -63,11 +70,13 @@ export class LoginComponent {
     });
   }
 
+  // Navegar para a página de "esqueci a senha"
   navigateForgotPassword(): void {
-    void this.router.navigate(['forgot']);
+    this.router.navigate(['forgot']);
   }
 
+  // Navegar para a página de "sign up" (registro)
   navigate(): void {
-    void this.router.navigate(['signup']);
+    this.router.navigate(['signup']);
   }
 }

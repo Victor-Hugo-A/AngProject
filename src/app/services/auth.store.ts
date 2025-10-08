@@ -1,33 +1,30 @@
+// auth.store.ts
 import { Injectable, signal, computed } from '@angular/core';
 
 export type SessionUser = {
   id: string;
   name: string;
   email: string;
-  roles: string[];            // ajuste se usar enum
+  roles: string[];  // Deve ser um array de roles
   avatarUrl?: string | null;
 };
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
-  /** Estado inicial: tenta restaurar do localStorage */
-  private _token = signal<string | null>(localStorage.getItem('auth_token'));
-  private _user  = signal<SessionUser | null>(readUser('auth_user'));
+  private _token = signal<string | null>(localStorage.getItem('auth_token')); // Recupera o token do localStorage
+  private _user = signal<SessionUser | null>(readUser('auth_user'));  // Recupera o usuário (auth_user)
 
-  /** Selectors (signals/computed) */
   readonly token = computed(() => this._token());
-  readonly user  = computed(() => this._user());
-  readonly isAuthenticated = computed(() => !!this._token() && !!this._user());
+  readonly user = computed(() => this._user());
+  readonly isAuthenticated = computed(() => !!this._token() && !!this._user()); // Verifica se está autenticado
 
-  /** Salva sessão (chamado no login) */
   setSession(token: string, user: SessionUser) {
     this._token.set(token);
     this._user.set(user);
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem('auth_token', token); // Salva o token no localStorage
+    localStorage.setItem('auth_user', JSON.stringify(user)); // Salva o auth_user no localStorage
   }
 
-  /** Limpa sessão (logout) */
   clearSession() {
     this._token.set(null);
     this._user.set(null);
@@ -35,13 +32,12 @@ export class AuthStore {
     localStorage.removeItem('auth_user');
   }
 
-  /** Restaura sessão (opcional: chamar no guard/app init) */
   tryRestore(): boolean {
-    const t = localStorage.getItem('auth_token');
-    const u = readUser('auth_user');
-    if (!t || !u) { this.clearSession(); return false; }
-    this._token.set(t);
-    this._user.set(u);
+    const token = localStorage.getItem('auth_token');
+    const user = readUser('auth_user');
+    if (!token || !user) { this.clearSession(); return false; }
+    this._token.set(token);
+    this._user.set(user);
     return true;
   }
 }

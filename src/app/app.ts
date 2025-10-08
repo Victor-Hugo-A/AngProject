@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { TopbarComponent } from './componente/topbar/topbar.component'; // ajuste o path
 
 type CurrentUser = {
   id: string;
@@ -13,7 +12,7 @@ type CurrentUser = {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, TopbarComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

@@ -7,7 +7,7 @@
     [disablePrimaryBtn]="!loginForm.valid"
 >
 
-    <form [formGroup]="loginForm">
+    <form [formGroup]="loginForm" (ngSubmit)="submit()">
         <app-primary-input
             formControlName="email"
             inputName="email"

@@ -2,33 +2,61 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { AuthStore } from './auth.store';
+import { AuthStore, SessionUser } from './auth.store'; // <- importe o tipo daqui
 
-type LoginResponse = {
+export type AuthPayload = {
   token: string;
   user: {
-    id: string;
+    id: number | string;
     name: string;
     email: string;
-    roles: string[];      // ou seu enum
-    avatarUrl?: string | null;
+    role: string; // backend manda 1 papel
   };
 };
 
-const AUTH = '/auth'; // ajuste se necessário
+const AUTH = '/auth';
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
   constructor(private http: HttpClient, private store: AuthStore) {}
 
   login(email: string, password: string) {
-    return this.http.post<LoginResponse>('/auth/login', { email, password }).pipe(
-      tap(res => this.store.setSession(res.token, res.user))
+    return this.http.post<AuthPayload>(`${AUTH}/login`, { email, password }).pipe(
+      tap((res) => {
+        localStorage.setItem('auth_token', res.token);
+
+        // Mapear role (string) -> roles (string[])
+        const u: SessionUser = {
+          id: String(res.user.id),
+          name: res.user.name,
+          email: res.user.email,
+          roles: [res.user.role],     // <- aqui está o ajuste chave
+          avatarUrl: null
+        };
+
+        localStorage.setItem('auth_user', JSON.stringify(u));
+        this.store.setSession(res.token, u);
+      })
     );
   }
 
-  register(name: string, email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${AUTH}/register`, { name, email, password });
+  register(name: string, email: string, password: string): Observable<AuthPayload> {
+    return this.http.post<AuthPayload>(`${AUTH}/register`, { name, email, password }).pipe(
+      tap((res) => {
+        localStorage.setItem('auth_token', res.token);
+
+        const u: SessionUser = {
+          id: String(res.user.id),
+          name: res.user.name,
+          email: res.user.email,
+          roles: [res.user.role],     // <- idem
+          avatarUrl: null
+        };
+
+        localStorage.setItem('auth_user', JSON.stringify(u));
+        this.store.setSession(res.token, u);
+      })
+    );
   }
 
   requestReset(email: string, frontendUrl: string) {
@@ -41,5 +69,7 @@ export class LoginService {
 
   logout() {
     this.store.clearSession();
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
   }
 }

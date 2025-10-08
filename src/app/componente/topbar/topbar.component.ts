@@ -5,7 +5,7 @@ export type TopbarUser = {
   id: string;
   name: string;
   email: string;
-  role?: string;
+  roles?: string[];
   avatarUrl?: string | null;
 };
 
