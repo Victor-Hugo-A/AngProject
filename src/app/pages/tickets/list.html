@@ -1,0 +1,71 @@
+<section class="page">
+  <header class="topbar">
+    <div class="left">
+      <button class="btn" (click)="back()">← Voltar</button>
+    </div>
+    <div class="center">
+      <h1>Tickets</h1>
+      <p class="muted">Visualize e filtre seus chamados.</p>
+    </div>
+    <div class="right">
+      <a routerLink="/tickets/new" class="btn btn--primary">Abrir chamado</a>
+      <button class="btn btn--danger" (click)="logout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="filters">
+    <label> Status
+      <select [(ngModel)]="status" (change)="reload()">
+        <option value="">Todos</option>
+        <option>OPEN</option>
+        <option>IN_PROGRESS</option>
+        <option>RESOLVED</option>
+        <option>CLOSED</option>
+      </select>
+    </label>
+
+    <label> Prioridade
+      <select [(ngModel)]="priority" (change)="reload()">
+        <option value="">Todas</option>
+        <option>LOW</option>
+        <option>MEDIUM</option>
+        <option>HIGH</option>
+      </select>
+    </label>
+  </div>
+
+  @if (loading()) {
+    <div class="state muted">Carregando…</div>
+  } @else if (error()) {
+    <div class="state error">{{ error() }}</div>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>ID</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (t of $any(items); track t?.id) {
+            <tr>
+              <td>{{ t.id }}</td>
+              <td class="title">{{ t.title }}</td>
+              <td><span class="badge" [class]="'badge ' + t.status">{{ t.status }}</span></td>
+              <td>{{ t.priority }}</td>
+              <td>{{ t.created_at ?? $any(t).createdAt }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pager">
+        <button class="btn" (click)="prev()" [disabled]="page===0">Anterior</button>
+        <span>Página {{ page + 1 }} de {{ totalPages }}</span>
+        <button class="btn" (click)="next()" [disabled]="page >= totalPages - 1">Próxima</button>
+      </div>
+    }
+  }
+</section>

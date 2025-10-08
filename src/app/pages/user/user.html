@@ -1,57 +1,51 @@
-<app-topbar
-  [user]="currentUser"
-  (logout)="onTopbarLogout()"
-  (openProfile)="onOpenProfile()">
-</app-topbar>
-
-<section class="user-page">
-  <header class="user-page__header">
-    <div class="user-page__hello">
-      <h1>Bem-vindo, {{ currentUser?.name || 'Usuário' }} 👋</h1>
-      <p class="muted">Aqui está um resumo rápido dos seus chamados.</p>
+<section class="page">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="left">
+      <h1>Dashboard</h1>
+      <p class="muted">Bem-vindo(a) à central de chamados.</p>
     </div>
-
-    <div class="user-page__actions">
-      <a class="btn btn--primary" routerLink="/tickets/new">Abrir chamado</a>
-      <a class="btn" routerLink="/tickets">Ver todos</a>
+    <div class="right">
+      <button class="btn" (click)="toKnowledge()">Base de conhecimento</button>
+      <button class="btn btn--primary" (click)="toNewTicket()">Abrir chamado</button>
+      <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  <section class="cards">
-    <article class="card">
-      <span class="card__label">Abertos por você</span>
-      <strong class="card__value">{{ myOpenCount }}</strong>
-      <a routerLink="/tickets" [queryParams]="{ filter: 'my-open' }" class="card__link">ver detalhes</a>
-    </article>
+  @if (loading()) {
+    <div class="state muted">Carregando…</div>
+  } @else if (error()) {
+    <div class="state error">{{ error() }}</div>
+  } @else {
+    @if (currentUser) {
+      <section class="welcome">
+        <div class="avatar-circle">{{ (currentUser.name || 'U')[0] }}</div>
+        <div class="who">
+          <h2>Olá, {{ currentUser.name }}</h2>
+          <p class="muted">{{ currentUser.email }}</p>
+        </div>
+        <button class="btn" (click)="toProfile()">Meu perfil</button>
+      </section>
+    }
 
-    <article class="card">
-      <span class="card__label">Atribuídos a mim</span>
-      <strong class="card__value">{{ assignedToMeCount }}</strong>
-      <a routerLink="/tickets" [queryParams]="{ filter: 'assigned' }" class="card__link">ver detalhes</a>
-    </article>
-
-    <article class="card">
-      <span class="card__label">Em andamento</span>
-      <strong class="card__value">{{ inProgressCount }}</strong>
-      <a routerLink="/tickets" [queryParams]="{ filter: 'in-progress' }" class="card__link">ver detalhes</a>
-    </article>
-
-    <article class="card">
-      <span class="card__label">Resolvidos (30d)</span>
-      <strong class="card__value">{{ resolved30dCount }}</strong>
-      <a routerLink="/tickets" [queryParams]="{ filter: 'resolved-30d' }" class="card__link">ver detalhes</a>
-    </article>
-  </section>
-
-  <section class="shortcuts">
-    <a routerLink="/profile" class="shortcut">
-      <span>👤</span> Meu perfil
-    </a>
-    <a routerLink="/knowledge" class="shortcut">
-      <span>📚</span> Base de conhecimento
-    </a>
-    <a routerLink="/tickets/new" class="shortcut">
-      <span>📝</span> Abrir chamado
-    </a>
-  </section>
+    <!-- KPIs -->
+    <section class="cards">
+      <article class="card" (click)="toTickets()">
+        <div class="card__title">Meus abertos</div>
+        <div class="card__value">{{ myOpenCount }}</div>
+      </article>
+      <article class="card" (click)="toTickets()">
+        <div class="card__title">Atribuídos a mim</div>
+        <div class="card__value">{{ assignedToMeCount }}</div>
+      </article>
+      <article class="card" (click)="toTickets()">
+        <div class="card__title">Em andamento</div>
+        <div class="card__value">{{ inProgressCount }}</div>
+      </article>
+      <article class="card" (click)="toTickets()">
+        <div class="card__title">Resolvidos (30d)</div>
+        <div class="card__value">{{ resolved30dCount }}</div>
+      </article>
+    </section>
+  }
 </section>

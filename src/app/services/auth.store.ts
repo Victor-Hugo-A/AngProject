@@ -1,4 +1,3 @@
-// auth.store.ts
 import { Injectable, signal, computed } from '@angular/core';
 
 export type SessionUser = {

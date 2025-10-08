@@ -1,0 +1,54 @@
+<section class="page form-page">
+  <header class="topbar">
+    <div class="left">
+      <button class="btn" (click)="back()">← Voltar</button>
+    </div>
+    <div class="center">
+      <h1>Abrir chamado</h1>
+      <p class="muted">Descreva seu problema para abrir um ticket.</p>
+    </div>
+    <div class="right">
+      <button class="btn btn--danger" (click)="logout()">Sair</button>
+    </div>
+  </header>
+
+  <form (ngSubmit)="submit()" class="form">
+    <label>
+      <span>Título</span>
+      <input [(ngModel)]="title" name="title" required />
+    </label>
+
+    <label>
+      <span>Descrição</span>
+      <textarea [(ngModel)]="description" name="description" rows="5"></textarea>
+    </label>
+
+    <div class="grid">
+      <label>
+        <span>Prioridade</span>
+        <select [(ngModel)]="priority" name="priority" required>
+          <option value="LOW">Baixa</option>
+          <option value="MEDIUM">Média</option>
+          <option value="HIGH">Alta</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Categoria</span>
+        <select [(ngModel)]="categoryId" name="categoryId">
+          <option [ngValue]="null">—</option>
+          @for (c of $any(categories); track c?.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn btn--primary" [disabled]="loading()">Criar</button>
+      <button type="button" class="btn" (click)="back()">Cancelar</button>
+    </div>
+
+    @if (error()) { <div class="state error">{{ error() }}</div> }
+  </form>
+</section>
