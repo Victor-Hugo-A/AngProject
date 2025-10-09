@@ -1,76 +1,64 @@
-<section class="page profile-page">
+<section class="container stack">
   <header class="topbar">
-    <div class="left">
-      <button class="btn" (click)="back()">← Voltar</button>
-    </div>
-    <div class="center">
+    <div>
       <h1>Meu perfil</h1>
       <p class="muted">Gerencie as informações da sua conta.</p>
     </div>
-    <div class="right">
+    <div class="actions">
       <button class="btn btn--ghost" [disabled]="loading()" (click)="refresh()">
         @if (loading()) { Atualizando… } @else { Atualizar }
       </button>
+      <a class="btn" routerLink="/user">← Voltar</a>
       <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  @if (store.user(); as u) {
-    <section class="profile-card">
-      <div class="avatar">
-        <div class="avatar-circle">{{ (u.name || 'U')[0] }}</div>
-      </div>
-
-      <div class="info">
-        <form [formGroup]="form" class="form">
-          <div class="row">
-            <label class="label">Nome</label>
-            @if (!editing()) {
-              <div class="value">{{ u.name }}</div>
-            } @else {
-              <div class="value">
-                <input formControlName="name" />
-                @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                  <div class="hint error">Informe ao menos 2 caracteres.</div>
-                }
-              </div>
+  @if (store.user()) {
+    <section class="card">
+      <form [formGroup]="form" class="form">
+        <div class="grid-2">
+          <label>
+            <span>Nome</span>
+            @if (!editing()) { <div>{{ form.get('name')?.value }}</div> }
+            @else {
+              <input class="input" formControlName="name" />
+              @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                <div class="state error">Informe ao menos 2 caracteres.</div>
+              }
             }
-          </div>
+          </label>
 
-          <div class="row">
-            <label class="label">Email</label>
-            <div class="value">
-              <input formControlName="email"/>
-              <div class="hint muted">O e-mail não pode ser alterado.</div>
-            </div>
-          </div>
+          <label>
+            <span>E-mail</span>
+            <input class="input" formControlName="email" />
+          </label>
+        </div>
 
-          <div class="row">
-            <label class="label">Roles</label>
-            <div class="value chips">
-              @if ($any(u.roles)?.length) {
-                @for (r of $any(u.roles); track r) { <span class="chip">{{ r }}</span> }
-              } @else { <span class="muted">—</span> }
-            </div>
-          </div>
+        <div>
+          <span class="muted">Roles</span><br />
+          @if ($any(store.user()?.roles)?.length) {
+            @for (r of $any(store.user()?.roles); track r) { <span class="badge">{{ r }}</span> }
+          } @else { <span class="muted">—</span> }
+        </div>
 
-          <div class="actions">
-            @if (!editing()) {
-              <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar</button>
-            } @else {
-              <button type="button" class="btn" (click)="cancelEdit()">Cancelar</button>
-              <button type="button" class="btn btn--primary" [disabled]="saving() || form.invalid" (click)="save()">
-                @if (saving()) { Salvando… } @else { Salvar }
-              </button>
-            }
-          </div>
-        </form>
-      </div>
+        <div class="actions">
+          @if (!editing()) {
+            <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar</button>
+          } @else {
+            <button type="button" class="btn" (click)="cancelEdit()">Cancelar</button>
+            <button type="button" class="btn btn--primary" [disabled]="saving() || form.invalid" (click)="save()">
+              @if (saving()) { Salvando… } @else { Salvar }
+            </button>
+          }
+        </div>
+      </form>
     </section>
   } @else {
     <div class="state muted">Nenhum usuário em cache. Faça login novamente.</div>
   }
 
-  @if (error(); as err) { <div class="alert error">{{ err }}</div> }
-  @if (success(); as msg) { <div class="alert success">{{ msg }}</div> }
+  @if (error()) { <div class="state error">{{ error() }}</div> }
+  @if (success()) { <div class="state" style="background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46">
+    {{ success() }}
+  </div> }
 </section>

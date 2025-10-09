@@ -1,32 +1,30 @@
-<section class="page form-page">
+<section class="container stack">
   <header class="topbar">
-    <div class="left">
-      <button class="btn" (click)="back()">← Voltar</button>
-    </div>
-    <div class="center">
+    <div>
       <h1>Abrir chamado</h1>
-      <p class="muted">Descreva seu problema para abrir um ticket.</p>
+      <p class="muted">Descreva o problema para criarmos o ticket.</p>
     </div>
-    <div class="right">
+    <div class="actions">
+      <a class="btn" routerLink="/tickets">← Voltar</a>
       <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  <form (ngSubmit)="submit()" class="form">
+  <form class="card form" (ngSubmit)="submit()">
     <label>
       <span>Título</span>
-      <input [(ngModel)]="title" name="title" required />
+      <input class="input" [(ngModel)]="title" name="title" required />
     </label>
 
     <label>
       <span>Descrição</span>
-      <textarea [(ngModel)]="description" name="description" rows="5"></textarea>
+      <textarea class="input" rows="5" [(ngModel)]="description" name="description"></textarea>
     </label>
 
-    <div class="grid">
+    <div class="grid-2">
       <label>
         <span>Prioridade</span>
-        <select [(ngModel)]="priority" name="priority" required>
+        <select class="input" [(ngModel)]="priority" name="priority" required>
           <option value="LOW">Baixa</option>
           <option value="MEDIUM">Média</option>
           <option value="HIGH">Alta</option>
@@ -35,7 +33,7 @@
 
       <label>
         <span>Categoria</span>
-        <select [(ngModel)]="categoryId" name="categoryId">
+        <select class="input" [(ngModel)]="categoryId" name="categoryId">
           <option [ngValue]="null">—</option>
           @for (c of $any(categories); track c?.id) {
             <option [ngValue]="c.id">{{ c.name }}</option>
@@ -45,8 +43,10 @@
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn btn--primary" [disabled]="loading()">Criar</button>
-      <button type="button" class="btn" (click)="back()">Cancelar</button>
+      <button class="btn btn--primary" [disabled]="loading()" type="submit">
+        @if (loading()) { Criando… } @else { Criar }
+      </button>
+      <a class="btn" routerLink="/tickets">Cancelar</a>
     </div>
 
     @if (error()) { <div class="state error">{{ error() }}</div> }

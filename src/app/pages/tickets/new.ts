@@ -2,13 +2,13 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketsService, Category } from '../../services/tickets.service';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { AuthStore } from '../../services/auth.store';
 
 @Component({
   selector: 'app-ticket-new',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './new.html',
   styleUrls: ['./new.scss']
 })
