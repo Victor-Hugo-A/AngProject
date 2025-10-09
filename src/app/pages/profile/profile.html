@@ -1,52 +1,80 @@
-<section class="container stack">
-  <header class="topbar">
-    <div>
-      <h1>Meu perfil</h1>
-      <p class="muted">Gerencie as informações da sua conta.</p>
+<section class="profile" [class.is-editing]="editing()">
+  <!-- Topbar local da página -->
+  <header class="profile__topbar">
+    <div class="profile__topbar-left">
+      <h1 class="profile__title">Meu perfil</h1>
+      <p class="profile__subtitle">Gerencie as informações da sua conta.</p>
     </div>
-    <div class="actions">
+    <div class="profile__topbar-actions">
       <button class="btn btn--ghost" [disabled]="loading()" (click)="refresh()">
         @if (loading()) { Atualizando… } @else { Atualizar }
       </button>
-      <a class="btn" routerLink="/user">← Voltar</a>
+      <button class="btn" (click)="back()">← Voltar</button>
       <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  @if (store.user()) {
-    <section class="card">
-      <form [formGroup]="form" class="form">
-        <div class="grid-2">
-          <label>
-            <span>Nome</span>
-            @if (!editing()) { <div>{{ form.get('name')?.value }}</div> }
-            @else {
-              <input class="input" formControlName="name" />
-              @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                <div class="state error">Informe ao menos 2 caracteres.</div>
-              }
+  @if (store.user(); as u) {
+    <section class="card profile__card">
+      <!-- Identidade -->
+      <div class="profile__identity">
+        <div class="profile__avatar" aria-hidden="true">{{ (u.name || 'U')[0] }}</div>
+        <div class="profile__who">
+          <h2 class="profile__name">{{ u.name }}</h2>
+          <span class="profile__email">{{ u.email }}</span>
+        </div>
+      </div>
+
+      <!-- Formulário -->
+      <form [formGroup]="form" class="profile__form" (ngSubmit)="save()">
+        <div class="profile__grid">
+          <!-- Nome -->
+          <div class="field">
+            <label class="field__label" for="name">Nome</label>
+
+            @if (!editing()) {
+              <div class="field__readonly" id="name-readonly">{{ form.get('name')?.value }}</div>
+            } @else {
+              <div class="field__control">
+                <input id="name"
+                       class="input"
+                       formControlName="name"
+                       [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+                       autocomplete="name" />
+                @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                  <div class="field__hint field__hint--error">Informe ao menos 2 caracteres.</div>
+                }
+              </div>
             }
-          </label>
+          </div>
 
-          <label>
-            <span>E-mail</span>
-            <input class="input" formControlName="email" />
-          </label>
+          <!-- E-mail -->
+          <div class="field">
+            <label class="field__label" for="email">E-mail</label>
+            <div class="field__control">
+              <input id="email" class="input" formControlName="email" />
+              <div class="field__hint">O e-mail não pode ser alterado.</div>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <span class="muted">Roles</span><br />
-          @if ($any(store.user()?.roles)?.length) {
-            @for (r of $any(store.user()?.roles); track r) { <span class="badge">{{ r }}</span> }
-          } @else { <span class="muted">—</span> }
+        <!-- Roles -->
+        <div class="field">
+          <span class="field__label">Roles</span>
+          <div class="chips">
+            @if ($any(u.roles)?.length) {
+              @for (r of $any(u.roles); track r) { <span class="chip">{{ r }}</span> }
+            } @else { <span class="profile__muted">—</span> }
+          </div>
         </div>
 
-        <div class="actions">
+        <!-- Ações -->
+        <div class="profile__actions">
           @if (!editing()) {
             <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar</button>
           } @else {
             <button type="button" class="btn" (click)="cancelEdit()">Cancelar</button>
-            <button type="button" class="btn btn--primary" [disabled]="saving() || form.invalid" (click)="save()">
+            <button type="submit" class="btn btn--primary" [disabled]="saving() || form.invalid">
               @if (saving()) { Salvando… } @else { Salvar }
             </button>
           }
@@ -54,11 +82,9 @@
       </form>
     </section>
   } @else {
-    <div class="state muted">Nenhum usuário em cache. Faça login novamente.</div>
+    <div class="state state--muted">Nenhum usuário em cache. Faça login novamente.</div>
   }
 
-  @if (error()) { <div class="state error">{{ error() }}</div> }
-  @if (success()) { <div class="state" style="background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46">
-    {{ success() }}
-  </div> }
+  @if (error(); as err)   { <div class="state state--error"   role="alert">{{ err }}</div> }
+  @if (success(); as msg) { <div class="state state--success" role="status">{{ msg }}</div> }
 </section>

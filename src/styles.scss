@@ -138,7 +138,7 @@ body {
   &:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
   &:disabled{ opacity:.6; cursor:not-allowed; }
   &--primary{ background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
-  &--danger{ background: var(--danger); border-color: var(--danger); color: var(--danger-ink); }
+  &--danger{ border-color: var(--danger); color: var(--muted); }
   &--ghost{ background:#fff; border-color: var(--border); }
 }
 

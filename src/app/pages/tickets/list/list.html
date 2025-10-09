@@ -30,6 +30,11 @@
         <option>HIGH</option>
       </select>
     </label>
+
+    <label class="switch">
+      <input type="checkbox" [(ngModel)]="onlyMine" (change)="reload()" />
+      <span>Somente meus</span>
+    </label>
   </div>
 
   @if (loading()) { <div class="state muted">Carregando…</div> }

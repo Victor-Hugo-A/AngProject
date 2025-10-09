@@ -1,0 +1,47 @@
+<section class="container stack ticket">
+  <header class="topbar">
+    <div>
+      <h1>
+        @if (t) { #{{ t.id }} · {{ t.title }} } @else { Ticket }
+      </h1>
+      @if (t) {
+        <p class="muted">
+          <span class="badge {{ t.status }}">{{ t.status }}</span>
+          · Prioridade: {{ t.priority }}
+          · Categoria: {{ t.category?.name || '—' }}
+        </p>
+      }
+    </div>
+    <div class="actions">
+      <a class="btn" routerLink="/tickets">← Voltar</a>
+      @if (t && canAssign()) { <button class="btn" (click)="assignToMe()" [disabled]="saving()">Pegar p/ mim</button> }
+      @if (t) {
+        <button class="btn" (click)="setStatus('IN_PROGRESS')" [disabled]="saving()">Em andamento</button>
+        <button class="btn" (click)="setStatus('RESOLVED')" [disabled]="saving()">Resolver</button>
+        <button class="btn btn--danger" (click)="setStatus('CLOSED')" [disabled]="saving()">Fechar</button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) { <div class="state muted">Carregando…</div> }
+  @else if (error()) { <div class="state error">{{ error() }}</div> }
+  @else if (t) {
+    <div class="grid-2">
+      <article class="card">
+        <h3>Descrição</h3>
+        <p class="muted pre">{{ t.description || 'Sem descrição.' }}</p>
+      </article>
+
+      <aside class="card">
+        <h3>Metadados</h3>
+        <ul class="meta">
+          <li>ID: {{ t.id }}</li>
+          <li>Criado: {{ t.created_at | date:'short' }}</li>
+          <li>Atualizado: {{ t.updated_at | date:'short' }}</li>
+          <li>Solicitante: {{ t.requesterId }}</li>
+          <li>Responsável: {{ t.assigneeId || '—' }}</li>
+        </ul>
+      </aside>
+    </div>
+  }
+</section>
