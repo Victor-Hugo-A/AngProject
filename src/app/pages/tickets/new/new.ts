@@ -1,70 +1,86 @@
+// src/app/pages/tickets/new/new.ts
 import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { TicketsService, Category } from '../../../services/tickets.service';
+import {Router, RouterLink} from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+
+import { TicketsService } from '../../../services/tickets.service';
 import { AuthStore } from '../../../services/auth.store';
 
+type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+type Category = { id: number; name: string };
+
 @Component({
-  selector: 'app-ticket-new',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  selector: 'app-ticket-form',
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './new.html',
-  styleUrls: ['./new.scss']
+  styleUrl: './new.scss'
 })
-export class TicketNewComponent {
-  private api = inject(TicketsService);
+export class TicketFormComponent {
+  // INJEÇÕES
+  private tickets = inject(TicketsService);
+  private toast = inject(ToastrService);
   private router = inject(Router);
-  private store = inject(AuthStore);
+  private store = inject(AuthStore);              // ✅ Agora existe this.store
 
-  loading = signal(false);
-  error   = signal<string | null>(null);
-
-  // fields do form
+  // MODELO
   title = '';
   description = '';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
-  categoryId: number | null = null;
-
+  priority: Priority = 'MEDIUM';
+  categoryId: number | '' = '';
   categories: Category[] = [];
 
-  ngOnInit() {
-    this.api.categories().subscribe({
-      next: (cs) => this.categories = cs ?? [],
-      error: () => this.categories = [] // silencioso para não travar criação
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.tickets.categories().subscribe({
+      next: (cats: Category[]) => {
+        this.categories = cats ?? [];
+        if (!this.categoryId && this.categories.length) {
+          this.categoryId = this.categories[0].id;
+        }
+      },
+      error: () => this.toast.error('Falha ao carregar categorias')
     });
   }
 
-  submit() {
-    if (this.loading()) return;
-    if (!this.title.trim()) { this.error.set('Informe um título.'); return; }
-
-    this.loading.set(true);
+  submit(): void {
     this.error.set(null);
 
-    // monta somente o que tem valor
-    const payload: any = {
-      title: this.title.trim(),
-      priority: this.priority
-    };
-    if (this.description?.trim()) payload.description = this.description.trim();
-    if (this.categoryId != null)  payload.categoryId  = this.categoryId;
+    if (!this.title.trim() || !this.priority || this.categoryId === '' || this.categoryId == null) {
+      this.toast.warning('Preencha título, prioridade e categoria.');
+      return;
+    }
 
-    this.api.create(payload).subscribe({
-      next: (t) => {
+    const catId = typeof this.categoryId === 'string' ? Number(this.categoryId) : this.categoryId;
+
+    this.loading.set(true);
+    this.tickets.create({
+      title: this.title.trim(),
+      description: this.description?.trim() ?? '',
+      priority: this.priority,
+      categoryId: catId
+    }).subscribe({
+      next: () => {
+        this.toast.success('Chamado criado!');
         this.loading.set(false);
-        // se já tiver detalhe, pode ir para /tickets/:id
-        this.router.navigate(['/tickets']);
-        // this.router.navigate(['/tickets', t.id]);
+        void this.router.navigate(['/tickets']);
       },
-      error: (err) => {
+      error: (e) => {
+        console.error(e);
         this.loading.set(false);
-        this.error.set('Falha ao criar o ticket. Verifique os dados e tente novamente.');
-        console.error('POST /api/tickets error', err);
+        this.error.set('Erro ao criar chamado.');
       }
     });
   }
 
-  // Botões do topo
-  logout() { this.store.clearSession(); this.router.navigateByUrl('/login'); }
-  cancel() { this.router.navigateByUrl('/tickets'); } // usado no "Cancelar" e no "← Voltar" se você trocar
+  logout(): void {
+    this.store.clearSession();                          // ✅ método correto do AuthStore
+    void this.router.navigateByUrl('/login');    // ✅ trate/ignore a Promise
+  }
+
+cancel() { this.router.navigateByUrl('/tickets'); } // usado no "Cancelar" e no "← Voltar" se você trocar
 }

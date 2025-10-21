@@ -1,54 +1,43 @@
-<section class="container stack">
-  <header class="topbar">
-    <div>
-      <h1>Abrir chamado</h1>
-      <p class="muted">Descreva o problema para criarmos o ticket.</p>
-    </div>
-    <div class="actions">
-      <a class="btn" routerLink="/tickets">← Voltar</a>
-      <button class="btn btn--danger" (click)="logout()">Sair</button>
-    </div>
-  </header>
+<form class="card form" (ngSubmit)="submit()">
+  <label>
+    <span>Título</span>
+    <input class="input" [(ngModel)]="title" name="title" required />
+  </label>
 
-  <form class="card form" (ngSubmit)="submit()">
+  <label>
+    <span>Descrição</span>
+    <textarea class="input" rows="5" [(ngModel)]="description" name="description"></textarea>
+  </label>
+
+  <div class="grid-2">
     <label>
-      <span>Título</span>
-      <input class="input" [(ngModel)]="title" name="title" required />
+      <span>Prioridade</span>
+      <select class="input" [(ngModel)]="priority" name="priority" required>
+        <option value="LOW">Baixa</option>
+        <option value="MEDIUM">Média</option>
+        <option value="HIGH">Alta</option>
+      </select>
     </label>
 
     <label>
-      <span>Descrição</span>
-      <textarea class="input" rows="5" [(ngModel)]="description" name="description"></textarea>
+      <span>Categoria</span>
+      <!-- required + sem opção nula (ou use uma placeholder desabilitada) -->
+      <select class="input" [(ngModel)]="categoryId" name="categoryId" required>
+        <option value="" disabled selected>Selecione…</option>
+        @for (c of categories; track c.id) {
+          <!-- use [value] com string e converta no TS, ou [ngValue] mantendo number -->
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
     </label>
+  </div>
 
-    <div class="grid-2">
-      <label>
-        <span>Prioridade</span>
-        <select class="input" [(ngModel)]="priority" name="priority" required>
-          <option value="LOW">Baixa</option>
-          <option value="MEDIUM">Média</option>
-          <option value="HIGH">Alta</option>
-        </select>
-      </label>
+  <div class="actions">
+    <button class="btn btn--primary" [disabled]="loading()" type="submit">
+      @if (loading()) { Criando… } @else { Criar }
+    </button>
+    <a class="btn" routerLink="/tickets">Cancelar</a>
+  </div>
 
-      <label>
-        <span>Categoria</span>
-        <select class="input" [(ngModel)]="categoryId" name="categoryId">
-          <option [ngValue]="null">—</option>
-          @for (c of $any(categories); track c?.id) {
-            <option [ngValue]="c.id">{{ c.name }}</option>
-          }
-        </select>
-      </label>
-    </div>
-
-    <div class="actions">
-      <button class="btn btn--primary" [disabled]="loading()" type="submit">
-        @if (loading()) { Criando… } @else { Criar }
-      </button>
-      <a class="btn" routerLink="/tickets">Cancelar</a>
-    </div>
-
-    @if (error()) { <div class="state error">{{ error() }}</div> }
-  </form>
-</section>
+  @if (error()) { <div class="state error">{{ error() }}</div> }
+</form>

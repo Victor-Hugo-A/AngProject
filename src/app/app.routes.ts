@@ -15,7 +15,7 @@ export const routes: Routes = [
       import('./pages/forgot/forgot').then(m => m.ForgotComponent) },
 
   { path: 'tickets',      loadComponent: () => import('./pages/tickets/list/list').then(m => m.TicketsListComponent), canActivate: [authGuard] },
-  { path: 'tickets/new',  loadComponent: () => import('./pages/tickets/new/new').then(m => m.TicketNewComponent),    canActivate: [authGuard] },
+  { path: 'tickets/new',  loadComponent: () => import('./pages/tickets/new/new').then(m => m.TicketFormComponent),    canActivate: [authGuard] },
 
   { path: 'knowledge', loadComponent: () => import('./pages/knowledge/knowledge').then(m => m.KnowledgeComponent), canActivate: [authGuard] },
   { path: 'profile',   loadComponent: () => import('./pages/profile/profile').then(m => m.ProfileComponent),       canActivate: [authGuard] },
