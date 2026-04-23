@@ -1,90 +1,124 @@
-<section class="profile" [class.is-editing]="editing()">
-  <!-- Topbar local da página -->
-  <header class="profile__topbar">
-    <div class="profile__topbar-left">
-      <h1 class="profile__title">Meu perfil</h1>
-      <p class="profile__subtitle">Gerencie as informações da sua conta.</p>
+<section class="profile-page">
+  <header class="hero-card profile-hero">
+    <div class="hero-card__content">
+      <span class="eyebrow">Perfil</span>
+      <h1>Meu perfil</h1>
+      <p class="muted">Gerencie nome, foto e dados principais da sua conta no mesmo padrao visual do restante da aplicacao.</p>
     </div>
-    <div class="profile__topbar-actions">
+
+    <div class="hero-card__actions">
       <button class="btn btn--ghost" [disabled]="loading()" (click)="refresh()">
-        @if (loading()) { Atualizando… } @else { Atualizar }
+        @if (loading()) { Atualizando... } @else { Atualizar }
       </button>
-      <button class="btn" (click)="back()">← Voltar</button>
+      <a class="btn btn--ghost" routerLink="/user">Voltar</a>
       <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
   @if (store.user(); as u) {
-    <section class="card profile__card">
-      <!-- Identidade -->
-      <div class="profile__identity">
-        <div class="profile__avatar" aria-hidden="true">{{ (u.name || 'U')[0] }}</div>
-        <div class="profile__who">
-          <h2 class="profile__name">{{ u.name }}</h2>
-          <span class="profile__email">{{ u.email }}</span>
-        </div>
-      </div>
+    <section class="profile-layout">
+      <article class="card panel profile-card">
+        <div class="profile-card__head">
+          <label class="profile-avatar" [class.is-editable]="editing()">
+            @if (avatarPreview()) {
+              <img [src]="avatarPreview()" alt="Foto do perfil" />
+            } @else {
+              <span>{{ (u.name || 'U')[0] }}</span>
+            }
+            <input type="file" accept="image/*" [disabled]="!editing()" (change)="onAvatarSelected($event)" />
+            <span class="profile-avatar__overlay">
+              @if (editing()) { Trocar foto } @else { Foto do perfil }
+            </span>
+          </label>
 
-      <!-- Formulário -->
-      <form [formGroup]="form" class="profile__form" (ngSubmit)="save()">
-        <div class="profile__grid">
-          <!-- Nome -->
+          <div class="profile-card__identity">
+            <span class="eyebrow">Conta atual</span>
+            <h2>{{ u.name }}</h2>
+            <p class="muted">{{ u.email }}</p>
+          </div>
+        </div>
+
+        <form [formGroup]="form" class="profile-form" (ngSubmit)="save()">
           <div class="field">
             <label class="field__label" for="name">Nome</label>
-
-            @if (!editing()) {
-              <div class="field__readonly" id="name-readonly">{{ form.get('name')?.value }}</div>
-            } @else {
-              <div class="field__control">
-                <input id="name"
-                       class="input"
-                       formControlName="name"
-                       [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
-                       autocomplete="name" />
-                @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                  <div class="field__hint field__hint--error">Informe ao menos 2 caracteres.</div>
-                }
-              </div>
+            <input
+              id="name"
+              class="input"
+              formControlName="name"
+              [readonly]="!editing()"
+              [class.is-invalid]="form.get('name')?.invalid && form.get('name')?.touched" />
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+              <div class="field__hint field__hint--error">Informe ao menos 2 caracteres.</div>
             }
           </div>
 
-          <!-- E-mail -->
           <div class="field">
             <label class="field__label" for="email">E-mail</label>
-            <div class="field__control">
-              <input id="email" class="input" formControlName="email" />
-              <div class="field__hint">O e-mail não pode ser alterado.</div>
+            <input id="email" class="input" formControlName="email" readonly />
+            <div class="field__hint">O e-mail permanece fixo nesta versao.</div>
+          </div>
+
+          <div class="field">
+            <span class="field__label">Foto do perfil</span>
+            <div class="avatar-actions">
+              <button type="button" class="btn btn--ghost" [disabled]="!editing()" (click)="removeAvatar()">Remover foto</button>
+            </div>
+            <div class="field__hint">
+              @if (editing()) { Clique diretamente no avatar acima para escolher a foto. }
+              @else { Entre em edicao para trocar a foto clicando no avatar. }
             </div>
           </div>
-        </div>
 
-        <!-- Roles -->
-        <div class="field">
-          <span class="field__label">Roles</span>
-          <div class="chips">
-            @if ($any(u.roles)?.length) {
-              @for (r of $any(u.roles); track r) { <span class="chip">{{ r }}</span> }
-            } @else { <span class="profile__muted">—</span> }
+          <div class="field">
+            <span class="field__label">Roles</span>
+            <div class="chips">
+              @if ($any(u.roles)?.length) {
+                @for (r of $any(u.roles); track r) {
+                  <span class="chip">{{ r }}</span>
+                }
+              } @else {
+                <span class="profile-muted">-</span>
+              }
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            @if (!editing()) {
+              <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar perfil</button>
+            } @else {
+              <button type="button" class="btn btn--ghost" (click)="cancelEdit()">Cancelar</button>
+              <button type="submit" class="btn btn--primary" [disabled]="saving() || form.invalid">
+                @if (saving()) { Salvando... } @else { Salvar alteracoes }
+              </button>
+            }
+          </div>
+        </form>
+      </article>
+
+      <aside class="card panel profile-side">
+        <span class="eyebrow">Resumo</span>
+        <h2>Visao da conta</h2>
+
+        <div class="profile-side__list">
+          <div class="profile-side__item">
+            <span class="muted">Nome exibido</span>
+            <strong>{{ form.get('name')?.value }}</strong>
+          </div>
+          <div class="profile-side__item">
+            <span class="muted">E-mail</span>
+            <strong>{{ u.email }}</strong>
+          </div>
+          <div class="profile-side__item">
+            <span class="muted">Status da foto</span>
+            <strong>{{ avatarPreview() ? 'Configurada' : 'Sem foto' }}</strong>
           </div>
         </div>
-
-        <!-- Ações -->
-        <div class="profile__actions">
-          @if (!editing()) {
-            <button type="button" class="btn btn--primary" (click)="enableEdit()">Editar</button>
-          } @else {
-            <button type="button" class="btn" (click)="cancelEdit()">Cancelar</button>
-            <button type="submit" class="btn btn--primary" [disabled]="saving() || form.invalid">
-              @if (saving()) { Salvando… } @else { Salvar }
-            </button>
-          }
-        </div>
-      </form>
+      </aside>
     </section>
   } @else {
-    <div class="state state--muted">Nenhum usuário em cache. Faça login novamente.</div>
+    <div class="state state--muted">Nenhum usuario em cache. Faca login novamente.</div>
   }
 
-  @if (error(); as err)   { <div class="state state--error"   role="alert">{{ err }}</div> }
+  @if (error(); as err) { <div class="state state--error" role="alert">{{ err }}</div> }
   @if (success(); as msg) { <div class="state state--success" role="status">{{ msg }}</div> }
 </section>

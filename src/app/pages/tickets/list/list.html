@@ -1,70 +1,161 @@
-<section class="container stack">
-  <header class="topbar">
-    <div>
-      <h1>Tickets</h1>
-      <p class="muted">Visualize e filtre seus chamados.</p>
+<section class="container helpdesk-page">
+  <header class="hero-card">
+    <div class="hero-card__content">
+      <span class="eyebrow">Painel de atendimento</span>
+      <h1>Chamados do help desk</h1>
+      <p class="muted">
+        Acompanhe a fila com uma visao mais limpa, priorizando status, categoria e andamento real.
+      </p>
     </div>
-    <div class="actions">
-      <a class="btn" routerLink="/user">← Voltar</a>
+
+    <div class="hero-card__actions">
+      <a class="btn btn--ghost" routerLink="/user">Voltar</a>
       <a class="btn btn--primary" routerLink="/tickets/new">Abrir chamado</a>
       <button class="btn btn--danger" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  <div class="filters">
-    <label> Status
-      <select [(ngModel)]="status" (change)="reload()">
-        <option value="">Todos</option>
-        <option>OPEN</option>
-        <option>IN_PROGRESS</option>
-        <option>RESOLVED</option>
-        <option>CLOSED</option>
-      </select>
-    </label>
+  @if (loading()) {
+    <div class="state muted">Carregando chamados...</div>
+  } @else if (error()) {
+    <div class="state error">{{ error() }}</div>
+  } @else {
+    <section class="stats-grid stats-grid--overview">
+      <article class="stat-card stat-card--primary">
+        <span class="stat-card__label">Chamados visiveis</span>
+        <strong class="stat-card__value">{{ items.length }}</strong>
+        <span class="stat-card__meta">{{ totalElements }} no total</span>
+      </article>
 
-    <label> Prioridade
-      <select [(ngModel)]="priority" (change)="reload()">
-        <option value="">Todas</option>
-        <option>LOW</option>
-        <option>MEDIUM</option>
-        <option>HIGH</option>
-      </select>
-    </label>
+      <article class="stat-card">
+        <span class="stat-card__label">Abertos</span>
+        <strong class="stat-card__value">{{ countByStatus('OPEN') }}</strong>
+        <span class="stat-card__meta">Aguardando triagem</span>
+      </article>
 
-    <label class="switch">
-      <input type="checkbox" [(ngModel)]="onlyMine" (change)="reload()" />
-      <span>Somente meus</span>
-    </label>
-  </div>
+      <article class="stat-card">
+        <span class="stat-card__label">Em andamento</span>
+        <strong class="stat-card__value">{{ countByStatus('IN_PROGRESS') }}</strong>
+        <span class="stat-card__meta">Atendimento ativo</span>
+      </article>
 
-  @if (loading()) { <div class="state muted">Carregando…</div> }
-  @else if (error()) { <div class="state error">{{ error() }}</div> }
-  @else {
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-        <tr><th>ID</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th></tr>
-        </thead>
-        <tbody>
-          @for (t of $any(items); track t?.id) {
-            <tr>
-              <td>{{ t.id }}</td>
-              <td>{{ t.title }}</td>
-              <td><span class="badge {{ t.status }}">{{ t.status }}</span></td>
-              <td>{{ t.priority }}</td>
-              <td>{{ t.created_at ?? $any(t).createdAt }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+      <article class="stat-card">
+        <span class="stat-card__label">Resolvidos</span>
+        <strong class="stat-card__value">{{ countByStatus('RESOLVED') }}</strong>
+        <span class="stat-card__meta">Chamados concluídos</span>
+      </article>
 
-    @if (totalPages > 1) {
-      <div class="actions">
-        <button class="btn" (click)="prev()" [disabled]="page===0">Anterior</button>
-        <span>Página {{ page + 1 }} de {{ totalPages }}</span>
-        <button class="btn" (click)="next()" [disabled]="page >= totalPages - 1">Próxima</button>
+      <article class="stat-card">
+        <span class="stat-card__label">Fechados</span>
+        <strong class="stat-card__value">{{ countByStatus('CLOSED') }}</strong>
+        <span class="stat-card__meta">Fluxos encerrados</span>
+      </article>
+    </section>
+
+    <section class="card panel">
+      <div class="panel__header">
+        <div>
+          <span class="eyebrow">Filtros</span>
+          <h2>Refine a fila</h2>
+          <p class="panel__description">Use apenas status e escopo para navegar de forma objetiva.</p>
+        </div>
+        <button class="btn btn--ghost" type="button" (click)="reload()">Atualizar</button>
       </div>
+
+      <div class="filters filters--tickets">
+        <label>
+          <span>Status</span>
+          <select [(ngModel)]="status" (change)="reload()">
+            <option value="">Todos</option>
+            <option value="OPEN">Aberto</option>
+            <option value="IN_PROGRESS">Em andamento</option>
+            <option value="RESOLVED">Resolvido</option>
+            <option value="CLOSED">Fechado</option>
+          </select>
+        </label>
+
+        <label class="switch-card">
+          <span>Escopo</span>
+          <button
+            type="button"
+            class="switch-card__toggle"
+            [disabled]="ownership !== 'all'"
+            [class.is-active]="onlyMine"
+            (click)="onlyMine = !onlyMine; reload()">
+            <span class="switch-card__dot"></span>
+            <span>{{ scopeLabel() }}</span>
+          </button>
+        </label>
+      </div>
+
+      <div class="queue-shortcuts">
+        <a class="btn btn--primary" routerLink="/tickets/new">Abrir chamado</a>
+        <a class="btn btn--ghost" routerLink="/user">Voltar ao dashboard</a>
+      </div>
+    </section>
+
+    @if (items.length === 0) {
+      <section class="card empty-state">
+        <span class="empty-state__icon">0</span>
+        <h2>Nenhum ticket encontrado</h2>
+        <p class="muted">Ajuste o status ou o escopo para localizar o chamado certo.</p>
+        <a class="btn btn--primary" routerLink="/tickets/new">Criar chamado</a>
+      </section>
+    } @else {
+      <section class="card panel">
+        <div class="panel__header">
+          <div>
+            <span class="eyebrow">Fila atual</span>
+            <h2>Tickets recentes</h2>
+            <p class="panel__description">Lista formal e objetiva, focada em leitura rapida e acompanhamento.</p>
+          </div>
+          <span class="panel__meta">Pagina {{ page + 1 }} de {{ totalPages || 1 }}</span>
+        </div>
+
+        <div class="table-wrap table-wrap--interactive">
+          <table class="table">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Chamado</th>
+              <th>Status</th>
+              <th>Criado</th>
+            </tr>
+            </thead>
+            <tbody>
+              @for (t of $any(items); track t?.id) {
+                <tr class="ticket-row" (click)="open(t)">
+                  <td class="ticket-id">#{{ t.id }}</td>
+                  <td>
+                    <div class="ticket-main">
+                      <strong>{{ t.title }}</strong>
+                      <span class="muted">Categoria: {{ t.category?.name || 'Nao informada' }}</span>
+                      <span class="ticket-submeta">
+                        Solicitante #{{ t.requesterId }} @if (t.assigneeId) { • Responsavel #{{ t.assigneeId }} }
+                      </span>
+                    </div>
+                  </td>
+                  <td><span class="badge {{ t.status }}">{{ statusLabel(t.status) }}</span></td>
+                  <td>
+                    <div class="ticket-date">
+                      <strong>{{ (t.created_at ?? $any(t).createdAt) | date:'dd/MM/yyyy' }}</strong>
+                      <span class="muted">{{ (t.created_at ?? $any(t).createdAt) | date:'HH:mm' }}</span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (totalPages > 1) {
+          <div class="pagination-bar">
+            <button class="btn btn--ghost" (click)="prev()" [disabled]="page === 0">Anterior</button>
+            <span class="muted">Navegando pela lista de atendimento</span>
+            <button class="btn btn--ghost" (click)="next()" [disabled]="page >= totalPages - 1">Proxima</button>
+          </div>
+        }
+      </section>
     }
   }
 </section>

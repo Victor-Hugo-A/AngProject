@@ -1,43 +1,109 @@
-<form class="card form" (ngSubmit)="submit()">
-  <label>
-    <span>Título</span>
-    <input class="input" [(ngModel)]="title" name="title" required />
-  </label>
+<section class="page-shell ticket-create-page">
+  <header class="hero-card hero-card--compact">
+    <div class="hero-card__content">
+      <span class="eyebrow">Novo ticket</span>
+      <h1>Abrir chamado com contexto</h1>
+      <p class="muted">
+        Estruture o pedido com prioridade, categoria e uma descricao minima para acelerar o atendimento.
+      </p>
+    </div>
 
-  <label>
-    <span>Descrição</span>
-    <textarea class="input" rows="5" [(ngModel)]="description" name="description"></textarea>
-  </label>
+    <div class="hero-card__actions">
+      <a class="btn btn--ghost" routerLink="/tickets">Voltar para fila</a>
+      <a class="btn btn--primary" routerLink="/knowledge">Ver orientacoes</a>
+    </div>
+  </header>
 
-  <div class="grid-2">
-    <label>
-      <span>Prioridade</span>
-      <select class="input" [(ngModel)]="priority" name="priority" required>
-        <option value="LOW">Baixa</option>
-        <option value="MEDIUM">Média</option>
-        <option value="HIGH">Alta</option>
-      </select>
-    </label>
+  <div class="create-layout">
+    <form class="card form ticket-form-card" (ngSubmit)="submit()">
+      <div class="panel__header panel__header--form">
+        <div>
+          <span class="eyebrow">Formulario</span>
+          <h2>Detalhes do chamado</h2>
+          <p class="panel__description">Informe ao menos {{ minDescriptionLength }} caracteres na descricao para o chamado ser criado.</p>
+        </div>
+      </div>
 
-    <label>
-      <span>Categoria</span>
-      <!-- required + sem opção nula (ou use uma placeholder desabilitada) -->
-      <select class="input" [(ngModel)]="categoryId" name="categoryId" required>
-        <option value="" disabled selected>Selecione…</option>
-        @for (c of categories; track c.id) {
-          <!-- use [value] com string e converta no TS, ou [ngValue] mantendo number -->
-          <option [value]="c.id">{{ c.name }}</option>
-        }
-      </select>
-    </label>
+      <div class="form-shortcuts">
+        <a class="btn btn--ghost" routerLink="/tickets">Voltar para fila</a>
+        <a class="btn btn--ghost" routerLink="/user">Ir para dashboard</a>
+      </div>
+
+      <label>
+        <span>Titulo</span>
+        <input class="input" [(ngModel)]="title" name="title" placeholder="Ex.: Falha ao acessar VPN corporativa" required />
+      </label>
+
+      <label>
+        <span>Descricao</span>
+        <textarea
+          class="input"
+          rows="7"
+          [(ngModel)]="description"
+          name="description"
+          minlength="10"
+          required
+          placeholder="Informe sintomas, horario do erro, impacto e o que ja foi tentado."></textarea>
+        <small class="field-hint">Minimo de {{ minDescriptionLength }} caracteres para registrar o chamado.</small>
+      </label>
+
+      <div class="grid-2">
+        <label>
+          <span>Prioridade</span>
+          <select class="input" [(ngModel)]="priority" name="priority" required>
+            <option value="LOW">Baixa</option>
+            <option value="MEDIUM">Media</option>
+            <option value="HIGH">Alta</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Categoria</span>
+          <select class="input" [(ngModel)]="categoryId" name="categoryId" required>
+            <option value="" disabled>Selecione uma categoria</option>
+            @for (c of categories; track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="form-footer">
+        <div class="form-note">
+          <strong>Checklist rapido</strong>
+          <span class="muted">Contexto, impacto, horario e tentativa anterior ajudam a triagem.</span>
+        </div>
+        <div class="form-actions">
+          <a class="btn btn--ghost" routerLink="/tickets">Cancelar</a>
+          <button class="btn btn--primary" [disabled]="loading()" type="submit">
+            @if (loading()) { Criando... } @else { Criar chamado }
+          </button>
+        </div>
+      </div>
+
+      @if (error()) { <div class="state error">{{ error() }}</div> }
+    </form>
+
+    <aside class="card guidance-card">
+      <span class="eyebrow">Boas praticas</span>
+      <h2>O que ajuda a triagem</h2>
+
+      <div class="guidance-list">
+        <article>
+          <strong>Descreva o impacto</strong>
+          <p class="muted">Explique quem foi afetado, o que esta bloqueado e se existe alternativa temporaria.</p>
+        </article>
+
+        <article>
+          <strong>Inclua horario e contexto</strong>
+          <p class="muted">Esse detalhe ajuda a cruzar logs, incidentes e mudancas recentes.</p>
+        </article>
+
+        <article>
+          <strong>Escolha bem a prioridade</strong>
+          <p class="muted">Alta prioridade deve ficar para paradas, perda de acesso ou risco operacional real.</p>
+        </article>
+      </div>
+    </aside>
   </div>
-
-  <div class="actions">
-    <button class="btn btn--primary" [disabled]="loading()" type="submit">
-      @if (loading()) { Criando… } @else { Criar }
-    </button>
-    <a class="btn" routerLink="/tickets">Cancelar</a>
-  </div>
-
-  @if (error()) { <div class="state error">{{ error() }}</div> }
-</form>
+</section>

@@ -1,8 +1,7 @@
-// src/app/pages/tickets/new/new.ts
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 import { TicketsService } from '../../../services/tickets.service';
@@ -19,18 +18,18 @@ type Category = { id: number; name: string };
   styleUrl: './new.scss'
 })
 export class TicketFormComponent {
-  // INJEÇÕES
   private tickets = inject(TicketsService);
   private toast = inject(ToastrService);
   private router = inject(Router);
-  private store = inject(AuthStore);              // ✅ Agora existe this.store
+  private store = inject(AuthStore);
 
-  // MODELO
   title = '';
   description = '';
   priority: Priority = 'MEDIUM';
   categoryId: number | '' = '';
   categories: Category[] = [];
+
+  readonly minDescriptionLength = 10;
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -50,8 +49,17 @@ export class TicketFormComponent {
   submit(): void {
     this.error.set(null);
 
-    if (!this.title.trim() || !this.priority || this.categoryId === '' || this.categoryId == null) {
-      this.toast.warning('Preencha título, prioridade e categoria.');
+    const trimmedTitle = this.title.trim();
+    const trimmedDescription = this.description.trim();
+
+    if (!trimmedTitle || !this.priority || this.categoryId === '' || this.categoryId == null) {
+      this.toast.warning('Preencha titulo, prioridade e categoria.');
+      return;
+    }
+
+    if (trimmedDescription.length < this.minDescriptionLength) {
+      this.error.set(`A descricao deve ter no minimo ${this.minDescriptionLength} caracteres.`);
+      this.toast.warning(`A descricao deve ter no minimo ${this.minDescriptionLength} caracteres.`);
       return;
     }
 
@@ -59,8 +67,8 @@ export class TicketFormComponent {
 
     this.loading.set(true);
     this.tickets.create({
-      title: this.title.trim(),
-      description: this.description?.trim() ?? '',
+      title: trimmedTitle,
+      description: trimmedDescription,
       priority: this.priority,
       categoryId: catId
     }).subscribe({
@@ -69,7 +77,7 @@ export class TicketFormComponent {
         this.loading.set(false);
         void this.router.navigate(['/tickets']);
       },
-      error: (e) => {
+      error: e => {
         console.error(e);
         this.loading.set(false);
         this.error.set('Erro ao criar chamado.');
@@ -78,9 +86,11 @@ export class TicketFormComponent {
   }
 
   logout(): void {
-    this.store.clearSession();                          // ✅ método correto do AuthStore
-    void this.router.navigateByUrl('/login');    // ✅ trate/ignore a Promise
+    this.store.clearSession();
+    void this.router.navigateByUrl('/login');
   }
 
-cancel() { this.router.navigateByUrl('/tickets'); } // usado no "Cancelar" e no "← Voltar" se você trocar
+  cancel() {
+    void this.router.navigateByUrl('/tickets');
+  }
 }

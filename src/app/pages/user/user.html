@@ -1,51 +1,133 @@
-<section class="page">
-  <!-- Topbar -->
-  <header class="topbar">
-    <div class="left">
-      <h1>Dashboard</h1>
-      <p class="muted">Bem-vindo(a) à central de chamados.</p>
+<section class="page-shell dashboard-page">
+  <header class="hero-card">
+    <div class="hero-card__content">
+      <span class="eyebrow">Dashboard</span>
+      <h1>Painel do usuario</h1>
+      <p class="muted">Acompanhe seus chamados, consulte a base de apoio e entre na fila com o mesmo contexto visual.</p>
     </div>
-    <div class="right">
-      <button class="btn" (click)="toKnowledge()">Base de conhecimento</button>
-      <button class="btn btn--primary" (click)="toNewTicket()">Abrir chamado</button>
-      <button class="btn btn--danger" (click)="logout()">Sair</button>
+
+    <div class="hero-card__actions">
+      <button class="btn btn--ghost" type="button" (click)="toKnowledge()">Base de conhecimento</button>
+      <button class="btn btn--primary" type="button" (click)="toNewTicket()">Abrir chamado</button>
+      <button class="btn btn--danger" type="button" (click)="logout()">Sair</button>
     </div>
   </header>
 
   @if (loading()) {
-    <div class="state muted">Carregando…</div>
+    <div class="state muted">Carregando...</div>
   } @else if (error()) {
     <div class="state error">{{ error() }}</div>
   } @else {
     @if (currentUser) {
-      <section class="welcome">
-        <div class="avatar-circle">{{ (currentUser.name || 'U')[0] }}</div>
-        <div class="who">
-          <h2>Olá, {{ currentUser.name }}</h2>
-          <p class="muted">{{ currentUser.email }}</p>
+      <section class="card panel profile-panel">
+        <div class="profile-panel__identity">
+          <div class="avatar-circle">
+            @if (currentUser.avatarUrl) {
+              <img [src]="currentUser.avatarUrl" alt="Foto do usuario" />
+            } @else {
+              <span>{{ (currentUser.name || 'U')[0] }}</span>
+            }
+          </div>
+          <div class="profile-panel__text">
+            <span class="eyebrow">Sessao atual</span>
+            <h2>Ola, {{ currentUser.name }}</h2>
+            <p class="muted">{{ currentUser.email }}</p>
+          </div>
         </div>
-        <button class="btn" (click)="toProfile()">Meu perfil</button>
+
+        <div class="profile-panel__actions">
+          <button class="btn btn--ghost" type="button" (click)="openTickets()">Ver fila completa</button>
+          <button class="btn" type="button" (click)="toProfile()">Meu perfil</button>
+        </div>
       </section>
     }
 
-    <!-- KPIs -->
-    <section class="cards">
-      <article class="card" (click)="toTickets()">
-        <div class="card__title">Meus abertos</div>
-        <div class="card__value">{{ myOpenCount }}</div>
+    <section class="stats-grid dashboard-stats">
+      <article class="stat-card stat-card--interactive stat-card--primary" (click)="openTickets('mine')">
+        <span class="stat-card__label">Meus chamados</span>
+        <strong class="stat-card__value">{{ myTickets.length }}</strong>
+        <span class="stat-card__meta">Abre os tickets {{ ownershipLabel('requester') }}.</span>
       </article>
-      <article class="card" (click)="toTickets()">
-        <div class="card__title">Atribuídos a mim</div>
-        <div class="card__value">{{ assignedToMeCount }}</div>
+
+      <article class="stat-card stat-card--interactive" (click)="openTickets('assigned')">
+        <span class="stat-card__label">Atribuidos a mim</span>
+        <strong class="stat-card__value">{{ assignedToMeCount }}</strong>
+        <span class="stat-card__meta">Mostra os tickets {{ ownershipLabel('assignee') }}.</span>
       </article>
-      <article class="card" (click)="toTickets()">
-        <div class="card__title">Em andamento</div>
-        <div class="card__value">{{ inProgressCount }}</div>
+
+      <article class="stat-card stat-card--interactive" (click)="openTickets('in-progress')">
+        <span class="stat-card__label">Em andamento</span>
+        <strong class="stat-card__value">{{ inProgressCount }}</strong>
+        <span class="stat-card__meta">Leva para todos os tickets em andamento {{ ownershipLabel('all') }}.</span>
       </article>
-      <article class="card" (click)="toTickets()">
-        <div class="card__title">Resolvidos (30d)</div>
-        <div class="card__value">{{ resolved30dCount }}</div>
+
+      <article class="stat-card stat-card--interactive" (click)="openTickets('resolved')">
+        <span class="stat-card__label">Resolvidos</span>
+        <strong class="stat-card__value">{{ resolved30dCount }}</strong>
+        <span class="stat-card__meta">Abre todos os tickets resolvidos para consulta rapida.</span>
       </article>
+    </section>
+
+    <section class="dashboard-columns">
+      <section class="card panel my-tickets-panel">
+        <div class="panel__header">
+          <div>
+            <span class="eyebrow">Meus chamados</span>
+            <h2>Acompanhamento recente</h2>
+            <p class="panel__description">Seus chamados mais recentes aparecem aqui para consulta e acesso rapido.</p>
+          </div>
+          <button class="btn btn--ghost" type="button" (click)="openTickets('mine')">Ver todos</button>
+        </div>
+
+        @if (myTicketsLoading) {
+          <div class="state muted">Carregando seus chamados...</div>
+        } @else if (myTickets.length === 0) {
+          <div class="empty-inline">
+            <strong>Nenhum chamado criado por voce.</strong>
+            <span class="muted">Abra um novo chamado para ele aparecer aqui.</span>
+          </div>
+        } @else {
+          <div class="my-ticket-list">
+            @for (ticket of myTickets; track ticket.id) {
+              <button class="my-ticket-item" type="button" (click)="openTicket(ticket)">
+                <div class="my-ticket-item__top">
+                  <span class="my-ticket-item__id">#{{ ticket.id }}</span>
+                  <span class="badge {{ ticket.status }}">{{ statusLabel(ticket.status) }}</span>
+                </div>
+                <strong>{{ ticket.title }}</strong>
+                <span class="muted">Categoria: {{ ticket.category?.name || 'Nao informada' }}</span>
+                <span class="muted">{{ ticket.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </button>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="card panel quick-actions">
+        <div class="panel__header">
+          <div>
+            <span class="eyebrow">Atalhos</span>
+            <h2>Acessos rapidos</h2>
+          </div>
+        </div>
+
+        <div class="quick-actions__grid">
+          <button class="quick-link" type="button" (click)="openTickets()">
+            <strong>Fila completa</strong>
+            <span class="muted">Visao geral com filtros, cards e paginação.</span>
+          </button>
+
+          <button class="quick-link" type="button" (click)="toNewTicket()">
+            <strong>Novo chamado</strong>
+            <span class="muted">Abre o formulario com orientacoes e estrutura melhorada.</span>
+          </button>
+
+          <button class="quick-link" type="button" (click)="toKnowledge()">
+            <strong>Base de conhecimento</strong>
+            <span class="muted">Consulta guias e respostas com leitura mais organizada.</span>
+          </button>
+        </div>
+      </section>
     </section>
   }
 </section>

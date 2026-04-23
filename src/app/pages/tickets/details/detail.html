@@ -1,47 +1,108 @@
-<section class="container stack ticket">
-  <header class="topbar">
-    <div>
-      <h1>
-        @if (t) { #{{ t.id }} · {{ t.title }} } @else { Ticket }
-      </h1>
-      @if (t) {
-        <p class="muted">
-          <span class="badge {{ t.status }}">{{ t.status }}</span>
-          · Prioridade: {{ t.priority }}
-          · Categoria: {{ t.category?.name || '—' }}
-        </p>
-      }
-    </div>
-    <div class="actions">
-      <a class="btn" routerLink="/tickets">← Voltar</a>
-      @if (t && canAssign()) { <button class="btn" (click)="assignToMe()" [disabled]="saving()">Pegar p/ mim</button> }
-      @if (t) {
-        <button class="btn" (click)="setStatus('IN_PROGRESS')" [disabled]="saving()">Em andamento</button>
-        <button class="btn" (click)="setStatus('RESOLVED')" [disabled]="saving()">Resolver</button>
-        <button class="btn btn--danger" (click)="setStatus('CLOSED')" [disabled]="saving()">Fechar</button>
-      }
-    </div>
-  </header>
+<section class="container ticket-detail-page">
+  @if (loading()) {
+    <div class="state muted">Carregando ticket...</div>
+  } @else if (error()) {
+    <div class="state error">{{ error() }}</div>
+  } @else if (t) {
+    <header class="hero-card hero-card--detail">
+      <div class="hero-card__content">
+        <span class="eyebrow">Ticket #{{ t.id }}</span>
+        <h1>{{ t.title }}</h1>
+        <div class="ticket-summary">
+          <span class="badge {{ t.status }}">{{ statusLabel(t.status) }}</span>
+          <span class="priority-chip priority-chip--{{ t.priority }}">{{ t.priority }}</span>
+          <span class="summary-chip">{{ t.category?.name || 'Sem categoria' }}</span>
+        </div>
+      </div>
 
-  @if (loading()) { <div class="state muted">Carregando…</div> }
-  @else if (error()) { <div class="state error">{{ error() }}</div> }
-  @else if (t) {
-    <div class="grid-2">
-      <article class="card">
-        <h3>Descrição</h3>
-        <p class="muted pre">{{ t.description || 'Sem descrição.' }}</p>
+      <div class="hero-card__actions">
+        <a class="btn btn--ghost" routerLink="/tickets">Voltar para fila</a>
+        @if (canAssign()) {
+          <button class="btn btn--ghost" (click)="assignToMe()" [disabled]="saving()">Assumir ticket</button>
+        }
+      </div>
+    </header>
+
+    <section class="detail-grid">
+      <article class="card detail-main">
+        <div class="panel__header">
+          <div>
+            <span class="eyebrow">Descricao</span>
+            <h2>Contexto do chamado</h2>
+          </div>
+        </div>
+
+        <p class="muted pre">{{ t.description || 'Sem descricao informada.' }}</p>
+
+        <div class="detail-info-grid">
+          <div class="detail-info-card">
+            <span class="detail-info-card__label">Criado em</span>
+            <strong>{{ t.created_at | date:'dd/MM/yyyy HH:mm' }}</strong>
+          </div>
+          <div class="detail-info-card">
+            <span class="detail-info-card__label">Atualizado em</span>
+            <strong>{{ t.updated_at | date:'dd/MM/yyyy HH:mm' }}</strong>
+          </div>
+          <div class="detail-info-card">
+            <span class="detail-info-card__label">Solicitante</span>
+            <strong>#{{ t.requesterId }}</strong>
+          </div>
+          <div class="detail-info-card">
+            <span class="detail-info-card__label">Responsavel</span>
+            <strong>{{ t.assigneeId ? '#' + t.assigneeId : 'Nao atribuido' }}</strong>
+          </div>
+        </div>
+
+        <div class="status-actions">
+          <button class="btn btn--ghost" (click)="setStatus('OPEN')" [disabled]="saving()">Reabrir</button>
+          <button class="btn btn--ghost" (click)="setStatus('IN_PROGRESS')" [disabled]="saving()">Marcar em andamento</button>
+          <button class="btn btn--primary" (click)="setStatus('RESOLVED')" [disabled]="saving()">Resolver</button>
+          <button class="btn btn--danger" (click)="setStatus('CLOSED')" [disabled]="saving()">Fechar</button>
+        </div>
       </article>
 
-      <aside class="card">
-        <h3>Metadados</h3>
-        <ul class="meta">
-          <li>ID: {{ t.id }}</li>
-          <li>Criado: {{ t.created_at | date:'short' }}</li>
-          <li>Atualizado: {{ t.updated_at | date:'short' }}</li>
-          <li>Solicitante: {{ t.requesterId }}</li>
-          <li>Responsável: {{ t.assigneeId || '—' }}</li>
-        </ul>
+      <aside class="detail-side">
+        <article class="card meta-card">
+          <span class="eyebrow">Metadados</span>
+          <h2>Resumo operacional</h2>
+
+          <ul class="meta">
+            <li>
+              <span>Status atual</span>
+              <strong>{{ statusLabel(t.status) }}</strong>
+            </li>
+            <li>
+              <span>Categoria</span>
+              <strong>{{ t.category?.name || 'Sem categoria' }}</strong>
+            </li>
+            <li>
+              <span>Prioridade</span>
+              <strong>{{ t.priority }}</strong>
+            </li>
+            <li>
+              <span>Ultima movimentacao</span>
+              <strong>{{ t.updated_at | date:'dd/MM/yyyy HH:mm' }}</strong>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card timeline-card">
+          <span class="eyebrow">Historico</span>
+          <h2>Movimentacoes do chamado</h2>
+
+          <div class="timeline">
+            @for (entry of historyEntries(); track entry.created_at + entry.message) {
+              <div class="timeline__item">
+                <div class="timeline__top">
+                  <strong>{{ historyBadge(entry) }}</strong>
+                  <span class="muted">{{ entry.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <p class="muted">{{ entry.message }}</p>
+              </div>
+            }
+          </div>
+        </article>
       </aside>
-    </div>
+    </section>
   }
 </section>

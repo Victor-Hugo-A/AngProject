@@ -1,23 +1,74 @@
-<section class="container stack">
-  <header class="topbar">
-    <div>
+<section class="knowledge-page">
+  <header class="hero-card knowledge-hero">
+    <div class="hero-card__content">
+      <span class="eyebrow">Knowledge base</span>
       <h1>Base de conhecimento</h1>
-      <p class="muted">Artigos e respostas rápidas.</p>
+      <p class="muted">Guias curtos e objetivos para reduzir retrabalho antes ou durante a abertura do chamado.</p>
     </div>
-    <div class="actions">
-      <a class="btn" routerLink="/user">← Voltar</a>
-      <button class="btn btn--danger" (click)="logout()">Sair</button>
+
+    <div class="hero-card__actions">
+      <a class="btn btn--ghost" routerLink="/user">Voltar</a>
+      <a class="btn btn--primary" routerLink="/tickets/new">Abrir chamado</a>
+      <button class="btn btn--danger" type="button" (click)="logout()">Sair</button>
     </div>
   </header>
 
-  <div class="grid-2">
-    <article class="card">
-      <h3>Como abrir um chamado eficiente</h3>
-      <p class="muted">Dicas para descrever melhor o problema, anexar evidências e priorizar.</p>
-    </article>
-    <article class="card">
-      <h3>Resolução de problemas comuns</h3>
-      <p class="muted">Passo a passo para erros frequentes e verificação básica.</p>
-    </article>
-  </div>
+  <section class="knowledge-layout">
+    <aside class="card knowledge-sidebar">
+      <span class="eyebrow">Navegacao</span>
+      <h2>Atalhos uteis</h2>
+
+      <div class="knowledge-sidebar__list">
+        <a class="knowledge-sidebar__item" routerLink="/tickets/new">
+          <strong>Novo chamado</strong>
+          <span class="muted">Va direto para o formulario com boas praticas.</span>
+        </a>
+        <a class="knowledge-sidebar__item" routerLink="/tickets">
+          <strong>Fila de tickets</strong>
+          <span class="muted">Consulte andamento, resolvidos e fechados.</span>
+        </a>
+        <a class="knowledge-sidebar__item" routerLink="/user">
+          <strong>Meu painel</strong>
+          <span class="muted">Volte para seus indicadores e chamados recentes.</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="knowledge-content">
+      <section class="knowledge-grid">
+        <article class="card knowledge-card">
+          <span class="eyebrow">Abertura</span>
+          <h3>Como abrir um chamado eficiente</h3>
+          <p class="muted">Descreva contexto, impacto, horario e o que ja foi tentado. Isso reduz idas e vindas na triagem.</p>
+          <ul>
+            <li>Explique o problema em linguagem objetiva.</li>
+            <li>Informe quem foi afetado e o que ficou bloqueado.</li>
+            <li>Inclua evidencias, prints e horario aproximado.</li>
+          </ul>
+        </article>
+
+        <article class="card knowledge-card">
+          <span class="eyebrow">Suporte inicial</span>
+          <h3>Resolucao de problemas comuns</h3>
+          <p class="muted">Antes de abrir o chamado, confirme alguns pontos basicos para acelerar o diagnostico.</p>
+          <ul>
+            <li>Valide acesso a internet, VPN e credenciais.</li>
+            <li>Teste em outro navegador ou reinicie o aplicativo.</li>
+            <li>Anote a mensagem de erro exatamente como apareceu.</li>
+          </ul>
+        </article>
+
+        <article class="card knowledge-card knowledge-card--accent">
+          <span class="eyebrow">Priorizacao</span>
+          <h3>Quando marcar alta prioridade</h3>
+          <p class="muted">Use alta prioridade apenas quando houver parada operacional, perda de acesso critico ou risco real ao negocio.</p>
+          <ul>
+            <li>Equipe inteira bloqueada para trabalhar.</li>
+            <li>Sistema essencial fora do ar ou inacessivel.</li>
+            <li>Risco financeiro, de seguranca ou de compliance.</li>
+          </ul>
+        </article>
+      </section>
+    </div>
+  </section>
 </section>
